@@ -1,25 +1,79 @@
-/* 용병왕의 길 — 색 테마 · Sunnyside 9-slice 창틀 */
-.box,#hud .hv,#hud .rank,#goal,.card,.slot,.itemrow,.pm,.tslot,#toast div,#bTitle,.dmtop{
-  border:9px solid transparent;border-image:url(../assets/ui/box_lt.png) 3 fill / 9px stretch;image-rendering:pixelated;color:#3b2a1e}
-#hud .hv,#hud .rank,#goal,#toast div,#bTitle{border-width:6px;border-image-width:6px}
-.card,.slot,.itemrow,.pm{border-width:6px;border-image-width:6px}
-.dark,.dark.box{border-image-source:url(../assets/ui/box_dt.png);color:#f3e6cc}
-.white{border-image-source:url(../assets/ui/box_w.png)}
-button{border:6px solid transparent;border-image:url(../assets/ui/box_w.png) 3 fill / 6px stretch;color:#3b2a1e;background:none;font-weight:800;image-rendering:pixelated;transition:transform .06s}
-button:active{transform:translateY(1px)}
-button:hover{filter:brightness(1.06)}
-button.pri{border-image-source:url(../assets/ui/box_lt.png);color:#3b2a1e;filter:hue-rotate(-12deg) saturate(1.6)}
-button.go{background:transparent;color:#1f4a12;filter:none;border-image-source:url(../assets/ui/box_w.png);box-shadow:inset 0 0 0 40px rgba(120,200,90,.35)}
-button.warn{box-shadow:inset 0 0 0 40px rgba(230,110,80,.3)}
-button.sel,.tabs button.sel{box-shadow:inset 0 0 0 40px rgba(255,200,90,.45)}
-button[disabled]{opacity:.5;cursor:default}
-.box{background:transparent}
-.rank{font-family:Georgia,serif}
-.ico{display:inline-block;width:16px;height:16px;border-radius:50%}
+/* 용병왕의 길 — 픽셀 UI 테마 (Sunnyside 따뜻한 색 + Ninja Adventure 버튼·창 느낌) */
+@font-face{font-family:'Galmuri11';src:url(../assets/font/Galmuri11.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Galmuri11';src:url(../assets/font/Galmuri11-Bold.woff2) format('woff2');font-weight:700 900;font-display:swap}
+@font-face{font-family:'Galmuri9';src:url(../assets/font/Galmuri9.woff2) format('woff2');font-display:swap}
+:root{--ink:#2a1a10;--wood:#8a5a32;--woodL:#c08a52;--woodD:#5a3a20;--parch:#f4e4c1;--parch2:#fbf1da;--parchD:#d9bf8c;--org:#f39b3d;--orgL:#ffd27c;--orgD:#c8642a;
+  --grn:#6cc04a;--grnD:#3e8a2a;--red:#d9573b;--redD:#9a2f22;--gold:#ffd84a;--txt:#3b2414;--dim:#7a5a3a}
+html,body{font-family:'Galmuri11','Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:var(--txt);-webkit-font-smoothing:none;font-smooth:never}
+button,input{font-family:inherit}
+small,.sub{font-family:'Galmuri9','Galmuri11',sans-serif}
+/* 큰 창 */
+.box{background:var(--parch);border:3px solid var(--ink);border-radius:6px;color:var(--txt);
+  box-shadow:inset 0 0 0 3px var(--woodL),inset 0 0 0 6px var(--wood),inset 0 0 0 8px var(--ink),inset 0 12px 0 -4px rgba(255,255,255,.0),0 5px 0 rgba(0,0,0,.35);padding:14px 16px}
+.pbox.box{padding:12px 16px 14px;background:linear-gradient(var(--parch),#efd9ad)}
+.ptitle{margin:-4px -6px 8px;padding:6px 10px 8px;border-bottom:2px dashed var(--parchD)}
+.ptitle>span{display:inline-block;background:var(--red);color:#fff7e6;padding:4px 14px 5px;border:2px solid var(--ink);border-radius:3px;box-shadow:inset 0 -3px 0 var(--redD),inset 0 2px 0 #ff9a7a,0 2px 0 rgba(0,0,0,.3);font-size:15px;text-shadow:0 1px 0 var(--redD)}
+/* 작은 카드·줄 */
+.card,.slot,.itemrow,.pm{background:var(--parch2);border:2px solid #b8925e;border-radius:4px;box-shadow:inset 0 -3px 0 #ead7ae,0 1px 0 rgba(0,0,0,.12);color:var(--txt)}
+.card h4{color:var(--woodD)}
+.itemrow:hover,.slot:hover{border-color:var(--orgD)}
+.ic32{background-color:transparent}
+.itemrow .ic32,.slot .ic32{background-color:#3a2a1e;border:2px solid var(--ink);border-radius:3px;box-shadow:inset 0 0 0 2px #6a4a30}
+/* 버튼 (Ninja Adventure 느낌의 주황 버튼) */
+button{border:2px solid var(--ink);border-radius:5px;background:linear-gradient(#fff4dc,#f1d9a8);color:var(--txt);font-weight:700;
+  box-shadow:inset 0 -3px 0 #c9a46a,inset 0 2px 0 #fff,0 2px 0 rgba(0,0,0,.35);padding:6px 12px;transition:transform .05s;image-rendering:pixelated}
+button:hover{filter:brightness(1.05)}
+button:active{transform:translateY(2px);box-shadow:inset 0 -1px 0 #c9a46a,0 0 0 rgba(0,0,0,0)}
+button.pri,button.sel,.tabs button.sel{background:linear-gradient(var(--orgL),var(--org));box-shadow:inset 0 -3px 0 var(--orgD),inset 0 2px 0 #ffe9b8,0 2px 0 rgba(0,0,0,.35);color:#3b1a08}
+button.go{background:linear-gradient(#bdf08a,var(--grn));box-shadow:inset 0 -3px 0 var(--grnD),inset 0 2px 0 #e2ffc4,0 2px 0 rgba(0,0,0,.35);color:#173a0a}
+button.warn{background:linear-gradient(#ffb59a,var(--red));box-shadow:inset 0 -3px 0 var(--redD),inset 0 2px 0 #ffd2c2,0 2px 0 rgba(0,0,0,.35);color:#fff6ee;text-shadow:0 1px 0 var(--redD)}
+button[disabled]{filter:grayscale(.7);opacity:.6;cursor:default;transform:none}
+.x{background:linear-gradient(#ffb59a,var(--red));box-shadow:inset 0 -3px 0 var(--redD),0 2px 0 rgba(0,0,0,.3);color:#fff;font-size:14px}
+/* 탭 */
+.tabs{border-bottom:3px solid var(--wood);padding-bottom:0;gap:3px}
+.tabs button{border-radius:6px 6px 0 0;border-bottom:none;margin-bottom:-1px;box-shadow:inset 0 2px 0 #fff;background:linear-gradient(#efe0bf,#dcc391)}
+.tabs button.sel{box-shadow:inset 0 2px 0 #ffe9b8;background:linear-gradient(var(--orgL),var(--org))}
+/* 상단 정보 칩 (어두운 나무) */
+#hud .hv,#hud .rank,#goal,#toast div,#bTitle,.dmtop{background:rgba(42,26,16,.9);border:2px solid var(--ink);border-radius:6px;box-shadow:inset 0 0 0 2px #7a4e2a,0 3px 0 rgba(0,0,0,.35);color:#fff1d6}
+#hud .rank{border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3b0,var(--gold) 45%,#b07a10);color:var(--ink)!important;box-shadow:inset 0 0 0 2px #fff6c0,0 0 0 2px var(--ink),0 3px 0 rgba(0,0,0,.35);border:none;text-shadow:0 1px 0 #fff3b0}
+#hud .hv b{color:#ffe28a}
+#goal b{color:var(--ink);background:var(--gold);padding:1px 6px;border-radius:3px}
+.dmtop small,#hud small{color:#d8c0a0}
+#toast div{border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--gold),0 3px 0 rgba(0,0,0,.35)}
+/* 가이드 */
+#guide.box{padding:12px 14px;font-size:12px;background:linear-gradient(var(--parch),#efd9ad)}
+#guide .ghead{color:var(--woodD)}
+/* 대화창 (Ninja Adventure 대화창 느낌) */
+.dbox.box{background:#fff8ea;box-shadow:inset 0 0 0 3px var(--org),inset 0 0 0 5px var(--orgD),inset 0 0 0 7px var(--ink),0 5px 0 rgba(0,0,0,.35);padding:16px 18px;position:relative}
+.dname{position:absolute;top:-16px;left:110px;background:linear-gradient(var(--orgL),var(--org));border:2px solid var(--ink);border-radius:4px;padding:3px 12px;box-shadow:inset 0 -2px 0 var(--orgD);color:#3b1a08;font-size:13px}
+.dname:empty{display:none}
+.face{background-color:#1f2f2e;border:3px solid var(--ink);border-radius:4px;box-shadow:inset 0 0 0 3px #4a6a66}
+.dtext{padding-top:6px}
+/* 타이틀 슬롯 */
+.tslot.box{padding:12px 16px}
+.tlogo h1{font-family:'Galmuri11',sans-serif;font-weight:700;text-shadow:0 4px 0 #5a3418,0 0 0 #000,3px 3px 0 #2a1a10,-2px -2px 0 #2a1a10,2px -2px 0 #2a1a10,-2px 2px 0 #2a1a10}
+/* 던전 아래쪽 파티 */
+.pm{padding:4px 7px;min-width:108px;background:rgba(251,241,218,.95)}
+.bar{background:#3a2418;border:1px solid var(--ink);border-radius:2px}
+.good{color:#2f7a1c}.bad{color:#b0392a}.dim{opacity:.6}.gold{color:#a06a00}
+#title{background:radial-gradient(ellipse at 50% 40%,rgba(40,25,12,.1),rgba(15,9,4,.65))}
+.ico{display:inline-block;width:14px;height:14px;border:2px solid var(--ink);border-radius:50%}
 .ico-gold{background:radial-gradient(circle at 35% 35%,#fff2a0,#e8b030 55%,#9a6a10)}
-.ico-fame{background:radial-gradient(circle at 35% 35%,#d8f0ff,#6aa8e8 55%,#2a5a9a);border-radius:3px;transform:rotate(45deg) scale(.8)}
-.good{color:#3f7d2c}.bad{color:#b0392a}.dim{opacity:.6}.gold{color:#9a6a10}
-#title{background:radial-gradient(ellipse at 50% 40%,rgba(40,25,12,.15),rgba(15,9,4,.7))}
-.node{border:5px solid transparent;border-image:url(../assets/ui/box_w.png) 3 fill / 5px stretch;background:none}
-.node.boss{border-image-source:url(../assets/ui/box_dt.png);color:#fff}
-#dmap{background:linear-gradient(#2a1d13ee,#1b120bee)}
+.ico-fame{background:radial-gradient(circle at 35% 35%,#d8f0ff,#6aa8e8 55%,#2a5a9a);border-radius:2px;transform:rotate(45deg) scale(.8)}
+input{border:2px solid var(--ink)!important;border-radius:4px;box-shadow:inset 0 2px 0 rgba(0,0,0,.15)}
+/* 캐릭터 만들기 */
+#title{overflow-y:auto;justify-content:safe center}
+.ngwrap{display:flex;gap:10px;align-items:flex-start}
+.ngprev{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+#ngCv{width:120px;height:120px;image-rendering:pixelated;background:radial-gradient(circle at 50% 70%,#9fd27a,#6fae54 70%);border:3px solid var(--wood,#7a4a2a);border-radius:6px}
+#ngRnd{font-size:12px;padding:3px 8px}
+.ngopts{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+.ngrow{display:flex;align-items:center;gap:6px}
+.ngl{width:58px;flex:none;font-size:12px;font-weight:900}
+.ngsw{display:flex;flex-wrap:wrap;gap:3px}
+.ngsw .sw{width:20px;height:20px;padding:0;min-width:0;border:2px solid #5a3a20;border-radius:3px;box-shadow:none}
+.ngsw .sw.sel{outline:2px solid #fff;outline-offset:-5px;border-color:#ffb02e;transform:scale(1.12)}
+.ngcy{display:flex;align-items:center;gap:4px;flex:1}
+.ngcy button{padding:1px 7px;font-size:12px;min-width:0}
+.ngcy b{flex:1;text-align:center;font-size:13px}
+@media (max-width:380px){.ngwrap{flex-direction:column;align-items:center}.ngl{width:50px}}

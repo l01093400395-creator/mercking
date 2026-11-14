@@ -1,6 +1,6 @@
 /* 용병왕의 길 — 기본 레이아웃 */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:#1b130d;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;color:#3b2a1e;user-select:none;-webkit-user-select:none;touch-action:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#1b130d;color:#3b2a1e;user-select:none;-webkit-user-select:none;touch-action:none}
 #c{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated;display:block}
 .hidden{display:none!important}
 button{font:inherit;cursor:pointer}
@@ -52,10 +52,10 @@ button{font:inherit;cursor:pointer}
 .price{font-weight:800;white-space:nowrap}
 /* 대화창 */
 #dlg{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;padding:10px;padding-bottom:max(10px,env(safe-area-inset-bottom));cursor:pointer}
-.dbox{width:min(820px,100%);min-height:120px;display:flex;gap:12px;align-items:flex-start;padding:12px 14px;position:relative}
+.dbox{width:min(820px,100%);min-height:120px;display:flex;gap:14px;align-items:flex-start;position:relative;margin-top:14px}
 .face{width:84px;height:84px;flex:none;image-rendering:pixelated;background-repeat:no-repeat}
-.dtext{flex:1;font-size:15.5px;line-height:1.55}
-.dname{font-weight:900;margin-bottom:4px;font-size:15px}
+.dtext{flex:1;font-size:15px;line-height:1.7}
+
 .dnext{position:absolute;right:14px;bottom:8px;font-size:12px}
 /* 전투 */
 #bhud{position:fixed;inset:0;z-index:18;pointer-events:none}
@@ -69,7 +69,11 @@ button{font:inherit;cursor:pointer}
 .bcmd button[disabled]{opacity:.45}
 .bhint{position:absolute;left:50%;transform:translateX(-50%);top:54px;font-size:13px;padding:4px 10px;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap}
 /* 던전 지도 */
-#dmap{position:fixed;inset:0;z-index:16;display:flex;flex-direction:column;padding:8px;padding-top:max(52px,calc(env(safe-area-inset-top) + 48px));gap:6px}
+#dmap{position:fixed;inset:0;z-index:16;display:flex;flex-direction:column;justify-content:space-between;padding:8px;padding-top:max(52px,calc(env(safe-area-inset-top) + 48px));gap:6px;pointer-events:none}
+#dmap .dmtop,#dmap .dmbot{pointer-events:auto}
+#dmScroll,#dmRet{display:none!important}
+.dmtop{align-self:flex-start;max-width:min(560px,70vw)}
+.pm{display:flex;gap:5px;align-items:center}
 .dmtop{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-weight:800;font-size:14px;gap:8px;flex-wrap:wrap}
 #dmScroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
 #dmInner{position:relative;margin:0 auto}

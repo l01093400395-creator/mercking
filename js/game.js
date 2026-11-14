@@ -98,7 +98,7 @@ function genMerc(lv,o){o=o||{};const sex=o.sex||(Math.random()<.4?'f':'m');
   const job=o.job||pick(D.JOB_KEYS);
   const m={id:nid('m'),name:o.name||(pick(sex==='f'?D.NAMES_F:D.NAMES_M)+pick(D.SURN)),sex,job,
     grade:o.grade??0,pot:o.pot??0,pers:o.pers||pick(D.PERS_KEYS),lv,exp:0,
-    look:{o:D.JOBS[job].outfit,hair:o.hair||pick(D.HAIRS),hc:o.hc??ri(0,6)},
+    look:{o:D.JOBS[job].outfit,hair:o.hair||pick(D.HAIRS),hc:o.hc??ri(0,6),sk:o.sk??pick([0,0,0,1,1,2,3,4])},
     eq:{wpn:null,arm:null,acc1:null,acc2:null},falls:0,status:'ok',injDays:0,seq:false,dis:false};
   if(sex==='f'&&!o.hair)m.look.hair=pick(['longhair','curlyhair','bowlhair','mophair']);
   return m;}
@@ -173,24 +173,62 @@ function dungOpen(dk){const d=D.DUNG[dk];if(!d)return false;
   if(d.rank&&rankIdx(S.rank)<rankIdx(d.rank))return false;
   if(d.unlock){const i=D.MAIN.findIndex(m=>m.id===d.unlock);if(S.main<i)return false;}
   return true;}
-function genMap(dk){const d=D.DUNG[dk],F=d.floors;const layers=[];
-  for(let l=0;l<F;l++){let n;
-    if(l===0)n=2;else if(l===F-1)n=1;else if(l===F-2)n=ri(1,2);else n=ri(2,4);
-    const row=[];for(let i=0;i<n;i++){let t;
-      if(l===F-1)t='boss';else if(l===F-2)t='camp';
-      else if(l===0)t='battle';
-      else t=wpick(['battle','elite','trap','chest','camp','shop'],[46,l>=2?13:0,11,13,l>=2?8:0,l>=2?8:0]);
-      row.push({id:l+'_'+i,l,i,n,t,links:[],done:false});}
-    layers.push(row);}
-  // 연결: 각 노드는 다음 층의 가까운 노드 1~2개와 연결, 다음 층 모든 노드는 최소 1개 진입로
-  for(let l=0;l<F-1;l++){const a=layers[l],b=layers[l+1];
-    for(const x of a){const pos=(x.i+.5)/a.length;let best=0,bd=9;b.forEach((y,j)=>{const dd=Math.abs((j+.5)/b.length-pos);if(dd<bd){bd=dd;best=j;}});
-      x.links.push(b[best].id);if(b.length>1&&Math.random()<.45){const j2=clamp(best+(Math.random()<.5?-1:1),0,b.length-1);if(!x.links.includes(b[j2].id))x.links.push(b[j2].id);}}
-    for(const y of b)if(!a.some(x=>x.links.includes(y.id))){let best=a[0],bd=9;for(const x of a){const dd=Math.abs((x.i+.5)/a.length-(y.i+.5)/b.length);if(dd<bd){bd=dd;best=x;}}best.links.push(y.id);}}
-  // 같은 층에 휴식/상점이 몰리지 않게
-  for(const row of layers){let seen={};for(const x of row){if((x.t==='camp'||x.t==='shop')&&seen[x.t]&&x.l<F-2)x.t='battle';seen[x.t]=1;}}
-  return {dk,layers};}
-function nodeById(map,id){const [l,i]=id.split('_').map(Number);return map.layers[l][i];}
+/* ---------------- 던전 (방·미로) 생성 — 같은 seed면 같은 지도 ---------------- */
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const OUTDOOR={forest:1,camp:1,waste:1,mist:1};
+function genDungeon(dk,seed){const d=D.DUNG[dk],F=d.floors,R=mulberry(seed);const rr=(a,b)=>a+Math.floor(R()*(b-a+1));const rp=a=>a[Math.floor(R()*a.length)];
+  const cols=F<=5?3:4,rows=F<=6?3:4,CW=12,CH=10,W=cols*CW+2,H=rows*CH+2;const target=Math.min(cols*rows,F+4);
+  // 1) 칸 단위 미로 (무작위 깊이 우선)
+  const N=cols*rows,adj=Array.from({length:N},()=>new Set());const seen=new Uint8Array(N);const st=[rr(0,N-1)];seen[st[0]]=1;
+  while(st.length){const c=st[st.length-1];const cx=c%cols,cy=c/cols|0;const nb=[[1,0],[-1,0],[0,1],[0,-1]].map(([x,y])=>[cx+x,cy+y]).filter(([x,y])=>x>=0&&y>=0&&x<cols&&y<rows).map(([x,y])=>y*cols+x).filter(n=>!seen[n]);
+    if(!nb.length){st.pop();continue;}const n=rp(nb);adj[c].add(n);adj[n].add(c);seen[n]=1;st.push(n);}
+  // 고리 몇 개 (미로가 너무 일자가 되지 않게)
+  for(let i=0;i<Math.floor(N/4);i++){const c=rr(0,N-1),cx=c%cols,cy=c/cols|0;const o=rp([[1,0],[0,1]]);const x=cx+o[0],y=cy+o[1];if(x<cols&&y<rows)adj[c].add(y*cols+x),adj[y*cols+x].add(c);}
+  const alive=new Set([...Array(N).keys()]);
+  const bfs=(s)=>{const dist=new Array(N).fill(-1);dist[s]=0;const q=[s];while(q.length){const c=q.shift();for(const n of adj[c])if(alive.has(n)&&dist[n]<0){dist[n]=dist[c]+1;q.push(n);}}return dist;};
+  // 출발: 모서리 칸, 보스: 가장 먼 칸
+  let start=rp([0,cols-1,N-cols,N-1]);let dist=bfs(start);let boss=dist.indexOf(Math.max(...dist));
+  // 칸 수 줄이기 (막다른 칸부터)
+  let guard=0;while(alive.size>target&&guard++<50){const leaves=[...alive].filter(c=>c!==start&&c!==boss&&[...adj[c]].filter(n=>alive.has(n)).length===1);if(!leaves.length)break;alive.delete(rp(leaves));}
+  dist=bfs(start);boss=[...alive].reduce((a,b)=>dist[b]>dist[a]?b:a,start);const maxD=dist[boss]||1;
+  // 2) 타일
+  const cells=new Uint8Array(W*H);const at=(x,y)=>y*W+x;
+  const rooms=[];for(const c of alive){const cx=c%cols,cy=c/cols|0;const big=c===boss||c===start;
+    const rw=big?CW-3:rr(5,CW-3),rh=big?CH-3:rr(4,CH-3);const rx=1+cx*CW+rr(1,CW-rw-1),ry=1+cy*CH+rr(2,CH-rh-1);
+    for(let y=ry;y<ry+rh;y++)for(let x=rx;x<rx+rw;x++)cells[at(x,y)]=1;
+    rooms.push({id:c,x:rx,y:ry,w:rw,h:rh,cx:rx+(rw>>1),cy:ry+(rh>>1),dist:dist[c],nb:[...adj[c]].filter(n=>alive.has(n))});}
+  const room=id=>rooms.find(r=>r.id===id);const corr=[];
+  const wide=OUTDOOR[d.theme]?2:1;
+  const done=new Set();for(const r of rooms)for(const n of r.nb){const k=Math.min(r.id,n)+'_'+Math.max(r.id,n);if(done.has(k))continue;done.add(k);const o=room(n);
+    let x=r.cx,y=r.cy;const hv=R()<.5;const carve=(x,y)=>{for(let i=0;i<wide;i++)for(let j=0;j<wide;j++){const X=x+i,Y=y+j;if(X>0&&Y>1&&X<W-1&&Y<H-1){if(!cells[at(X,Y)])corr.push([X,Y]);cells[at(X,Y)]=1;}}};
+    if(hv){while(x!==o.cx){carve(x,y);x+=Math.sign(o.cx-x);}while(y!==o.cy){carve(x,y);y+=Math.sign(o.cy-y);}}
+    else{while(y!==o.cy){carve(x,y);y+=Math.sign(o.cy-y);}while(x!==o.cx){carve(x,y);x+=Math.sign(o.cx-x);}}carve(x,y);}
+  // 3) 방 종류
+  for(const r of rooms){r.p=r.dist/maxD;r.l=Math.round(r.p*(F-1));r.t='battle';}
+  room(start).t='start';room(boss).t='boss';room(boss).l=F-1;
+  const pathTo=(()=>{const prev={};const q=[start];const v=new Set([start]);while(q.length){const c=q.shift();for(const n of room(c).nb)if(!v.has(n)){v.add(n);prev[n]=c;q.push(n);}}const p=[];let c=boss;while(c!==undefined&&c!==start){p.unshift(c);c=prev[c];}return p;})();
+  const setT=(id,t)=>{const r=room(id);if(r&&r.t==='battle')r.t=t;};
+  if(pathTo.length>=2)setT(pathTo[pathTo.length-2],'camp');
+  const mid=rooms.filter(r=>r.t==='battle'&&r.p>.3&&r.p<.62).sort((a,b)=>Math.abs(a.p-.45)-Math.abs(b.p-.45))[0];if(mid)mid.t='camp';
+  const dead=rooms.filter(r=>r.t==='battle'&&r.nb.length===1);let ci=0;for(const r of dead){if(ci<2){r.t='chest';ci++;}else if(F>=6&&!rooms.some(x=>x.t==='shop'))r.t='shop';}
+  if(F>=6&&!rooms.some(x=>x.t==='shop')){const c=rooms.filter(r=>r.t==='battle'&&r.p>.2&&r.p<.8);if(c.length>3)rp(c).t='shop';}
+  if(!rooms.some(x=>x.t==='chest')){const c=rooms.filter(r=>r.t==='battle'&&r.p>.15);if(c.length>2)rp(c).t='chest';}
+  for(const r of rooms)if(r.t==='battle'&&r.p>.3&&R()<.28)r.t='elite';
+  // 4) 함정·장식
+  const traps=[];const cand=corr.filter(([x,y])=>!rooms.some(r=>x>=r.x-1&&x<=r.x+r.w&&y>=r.y-1&&y<=r.y+r.h));
+  for(let i=0;i<2+Math.floor(F/3)&&cand.length;i++){const k=Math.floor(R()*cand.length);traps.push({x:cand[k][0],y:cand[k][1],id:i});cand.splice(k,1);}
+  const props=[];const torches=[];
+  for(const r of rooms){// 윗벽 횃불
+    for(let x=r.x+1;x<r.x+r.w-1;x+=3)if(!cells[at(x,r.y-1)]&&R()<.8)torches.push({x,y:r.y-1});
+    const n=Math.floor(r.w*r.h/14);for(let i=0;i<n;i++){const edge=R()<.7;let x,y;
+      if(edge){const s=rr(0,3);x=s<2?rr(r.x,r.x+r.w-1):s===2?r.x:r.x+r.w-1;y=s===0?r.y:s===1?r.y+r.h-1:rr(r.y,r.y+r.h-1);}else{x=rr(r.x+1,r.x+r.w-2);y=rr(r.y+1,r.y+r.h-2);}
+      if(Math.abs(x-r.cx)<=1&&Math.abs(y-r.cy)<=1)continue;if(props.some(p=>p.x===x&&p.y===y))continue;
+      // 통로 입구는 비우기
+      const nearCorr=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const X=x+a,Y=y+b;return cells[at(X,Y)]&&!(X>=r.x&&X<r.x+r.w&&Y>=r.y&&Y<r.y+r.h);});if(nearCorr)continue;
+      props.push({x,y,k:rp(edge?['barrel','box','bones','skull','web','candle','rock','barrel']:['bones','skull','rubble','candle']),solid:edge});}}
+  const sr=room(start);
+  return {dk,seed,w:W,h:H,cells,rooms,traps,props,torches,start:{x:sr.cx,y:sr.cy},theme:d.theme,outdoor:!!OUTDOOR[d.theme]};}
+function roomById(id){const r=S.run;return r&&r.dg?r.dg.rooms.find(x=>x.id===id):null;}
 
 /* ---------------- 적 생성 ---------------- */
 function monStats(def,lv,kind){const s=def.s,f=1+.012*lv;
@@ -333,12 +371,14 @@ function simulate(enemies,opt){const b=new Battle(enemies,Object.assign({sim:tru
 /* ---------------- 던전 탐험 (런) ---------------- */
 function startRun(dk){const pu=partyUnits();if(pu.length<1)return '출정할 수 있는 인원이 없습니다';
   for(const u of pu)u.hp=statsOf(u).hp;
-  S.run={dk,map:genMap(dk),cur:null,loot:{gold:0,tro:{},items:[],exp:0},kills:{},elites:0,chests:0,rooms:0,fame:0,fallen:[],log:[],bossDown:false,special:null};
+  S.run={dk,seed:Math.floor(Math.random()*1e9),cleared:{},used:{},trapSt:{},visited:{},pos:null,loot:{gold:0,tro:{},items:[],exp:0},kills:{},elites:0,chests:0,rooms:0,fame:0,fallen:[],log:[],bossDown:false,special:null};
   S.loc='run';save();return null;}
 function startSpecial(ek){const pu=partyUnits();for(const u of pu)u.hp=statsOf(u).hp;
   S.run={dk:null,special:ek,map:null,cur:null,loot:{gold:0,tro:{},items:[],exp:0},kills:{},elites:0,chests:0,rooms:0,fame:0,fallen:[],log:[]};return null;}
-function reachable(){const r=S.run;if(!r||!r.map)return [];if(!r.cur)return r.map.layers[0].map(n=>n.id);const c=nodeById(r.map,r.cur);if(!c.done)return [c.id];return c.links;}
-function enterNode(id){const r=S.run;const n=nodeById(r.map,id);r.cur=id;return n;}
+function visitRoom(id){const r=S.run;if(!r.visited[id]){r.visited[id]=1;r.rooms++;}}
+function trapDetect(){return Math.random()<clamp(.35+S.leader.INT*.012,0,.9);}
+function trapHit(){const hurt=[];for(const u of partyAliveUnits()){const dmg=Math.round(statsOf(u).hp*.12);u.hp=Math.max(1,u.hp-dmg);hurt.push([u.name,dmg]);}return hurt;}
+function trapDisarm(){const r=S.run,d=D.DUNG[r.dk];const g=Math.round(D.TIER[d.tier].inc*d.dm*.05);r.loot.gold+=g;return g;}
 function partyAliveUnits(){return partyUnits().filter(u=>u.hp>0);}
 // 전투가 끝난 뒤 정산
 function afterBattle(b,node){const r=S.run;const win=b.over===1;
@@ -357,7 +397,7 @@ function afterBattle(b,node){const r=S.run;const win=b.over===1;
       if(Math.random()<dropP){const lv=b.units.find(u=>u.side===1).lv||d.lv[1];const it=genItem(lv,rollRarity(kind==='boss'?18:kind==='elite'?8:0),pick(['wpn','arm','acc']));r.loot.items.push(it);out.items.push(it);}
       if(kind==='boss'){r.bossDown=true;const it2=Math.random()<.5?genItem(d.lv[1]+1,rollRarity(10),pick(['wpn','arm','acc'])):null;if(it2){r.loot.items.push(it2);out.items.push(it2);}}
       if(kind==='elite')r.elites++;}
-    r.loot.gold+=out.gold;r.fame+=out.fame;r.rooms++;}
+    r.loot.gold+=out.gold;r.fame+=out.fame;}
   // 경험치: 살아남은 인원 100%, 쓰러진 인원 50%
   out.exp=Math.round(xp);r.loot.exp+=out.exp;
   for(const bu of b.units)if(bu.side===0){const ups=gainExp(bu.ref,xp*(bu.hp>0?1:.5)*(bu.ref.lv>maxEnemyLv(b)+6?.4:1));if(ups){bu.ref.hp=Math.min(statsOf(bu.ref).hp,(bu.ref.hp||0)+(bu.hp>0?statsOf(bu.ref).hp*.15:0));out.lvups.push(bu.ref.name+' Lv.'+bu.ref.lv);}}
@@ -368,16 +408,15 @@ function maxEnemyLv(b){return Math.max(...b.units.filter(u=>u.side===1).map(u=>u
 function applyFallStatus(m){if(m.falls>=5&&!m.dis){m.dis=true;m.seq=true;S.log.push(m.name+' — 영구 장애 (전 능력치 -25%)');return 'dis';}
   if(m.falls>=3&&!m.seq){m.seq=true;S.log.push(m.name+' — 후유증 (속도 -15%)');return 'seq';}return null;}
 function nodeEvent(node){const r=S.run,d=D.DUNG[r.dk],inc=D.TIER[d.tier].inc*d.dm,L=S.leader;
-  if(node.t==='chest'){const g=Math.round(inc*.12*(1+L.INT*.01)*rnd(.8,1.2));r.loot.gold+=g;r.chests++;r.rooms++;let it=null;
+  if(node.t==='chest'){const g=Math.round(inc*.12*(1+L.INT*.01)*rnd(.8,1.2));r.loot.gold+=g;r.chests++;let it=null;
     if(Math.random()<.3+L.INT*.006){it=genItem(d.lv[1],rollRarity(6+L.INT*.2),pick(['wpn','arm','acc']));r.loot.items.push(it);}
     return {gold:g,item:it};}
   if(node.t==='trap'){const p=clamp(.35+L.INT*.012,0,.9);r.rooms++;
     if(Math.random()<p){const g=Math.round(inc*.05);r.loot.gold+=g;return {detected:true,gold:g};}
     const hurt=[];for(const u of partyAliveUnits()){const dmg=Math.round(statsOf(u).hp*.12);u.hp=Math.max(1,u.hp-dmg);hurt.push([u.name,dmg]);}
     return {detected:false,hurt};}
-  if(node.t==='shop'){const lv=d.lv[1];const items=[genItem(lv,rollRarity(5),pick(['wpn','arm'])),genItem(lv,rollRarity(5),'acc')];r.rooms++;
+  if(node.t==='shop'){const lv=d.lv[1];const items=[genItem(lv,rollRarity(5),pick(['wpn','arm'])),genItem(lv,rollRarity(5),'acc')];
     for(const it of items)it.price=Math.round(it.val*1.15);return {items};}
-  if(node.t==='camp'){r.rooms++;return {};}
   return {};}
 function campRest(kind){const pu=partyUnits();if(kind==='rest'){for(const u of pu){const mh=statsOf(u).hp;u.hp=u.hp>0?Math.min(mh,u.hp+mh*.35):Math.round(mh*.25);}}
   else{const x=Math.round(1.6*Math.pow(D.DUNG[S.run.dk].lv[0],1.5)*3+20);for(const u of pu)gainExp(u,x);return x;}}
@@ -493,7 +532,7 @@ function advance(cls){const c=D.LCLASS[cls];if(!c||c.base!==S.leader.cls)return 
 
 return {get S(){return S;},set S(v){S=v;},slot:1,D,rnd,ri,pick,clamp,fmt,rankIdx,newGame,save,load,peek,wipeSlot,SLOTS,itemById,statsOf,leaderStats,mercStats,power,expNeed,gainExp,
   wage,upkeep,hireCost,healCost,attitude,priceMul,addGold,addFame,maxRoster,curTier,townOpen,decorPts,campTax,genMerc,recruitList,hire,fire,mercById,canFight,partyUnits,
-  genItem,genUnique,rollRarity,canEquip,ownerOf,equip,unequip,sellItem,enhCost,enhance,addItem,invFull,dungOpen,genMap,nodeById,genEnemies,examEnemies,makeEnemy,Battle,simulate,
-  startRun,startSpecial,reachable,enterNode,afterBattle,nodeEvent,campRest,useConsumable,endRun,restDay,treat,curMain,genDailies,acceptSub,claimSub,subCheck,checkMain,examReady,passExam,talkMain,
+  genItem,genUnique,rollRarity,canEquip,ownerOf,equip,unequip,sellItem,enhCost,enhance,addItem,invFull,dungOpen,genDungeon,roomById,visitRoom,trapDetect,trapHit,trapDisarm,genEnemies,examEnemies,makeEnemy,Battle,simulate,
+  startRun,startSpecial,afterBattle,nodeEvent,campRest,useConsumable,endRun,restDay,treat,curMain,genDailies,acceptSub,claimSub,subCheck,checkMain,examReady,passExam,talkMain,
   get mainDone(){return mainDone;},clearMainDone(){mainDone=[];},advanceMain,buildable,build,campNext,campUpgrade,decorPrice,buyDecor,mercLine,townLine,advance,applyFallStatus,partyAliveUnits};
 })();
