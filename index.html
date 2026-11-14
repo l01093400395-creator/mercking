@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2b1d14">
+<title>용병왕의 길</title>
+<link rel="stylesheet" href="css/style.css?v=1">
+<link rel="stylesheet" href="css/theme.css?v=1">
+<link rel="stylesheet" href="css/ts.css?v=1">
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- 상단 정보줄 -->
+<div id="hud" class="hidden">
+  <div class="hl">
+    <span id="hRank" class="rank">F</span>
+    <span class="hv"><i class="ico ico-fame"></i><b id="hFame">0</b><small id="hFameN"></small></span>
+    <span class="hv"><i class="ico ico-gold"></i><b id="hGold">0</b></span>
+    <span class="hv day"><b id="hDay">1</b>일차</span>
+    <span class="hv loc" id="hLoc">집결지</span>
+  </div>
+  <div class="hr">
+    <button data-p="world" title="월드맵">🗺<span>지도</span></button>
+    <button data-p="party" title="용병단">👥<span>용병단</span></button>
+    <button data-p="bag" title="장비·가방">🎒<span>가방</span></button>
+    <button data-p="quest" title="퀘스트">📜<span>퀘스트</span></button>
+    <button data-p="menu" title="메뉴">⚙</button>
+  </div>
+</div>
+
+<!-- 현재 목표 -->
+<div id="goal" class="hidden"><b>목표</b> <span id="goalTxt"></span></div>
+
+<!-- 집결지 승급 가이드 -->
+<div id="guide" class="box hidden"></div>
+
+<!-- 공용 패널 -->
+<div id="panel" class="hidden"><div class="pbox box"><div class="ptitle"><span id="pTitle"></span><button id="pClose" class="x">✕</button></div><div id="pBody" class="pbody"></div></div></div>
+
+<!-- 대화창 -->
+<div id="dlg" class="hidden"><div class="dbox box"><div id="dFace" class="face"></div><div class="dtext"><div id="dName" class="dname"></div><div id="dText"></div></div><div class="dnext">▼</div></div></div>
+
+<!-- 전투 조작 -->
+<div id="bhud" class="hidden">
+  <div class="btop">
+    <span id="bTitle"></span>
+    <span class="bbtns"><button id="bAuto" class="tog">단장 오토 <b>OFF</b></button><button id="bSpeed" class="tog">속도 ×1</button></span>
+  </div>
+  <div id="bCmd" class="bcmd hidden"></div>
+  <div id="bHint" class="bhint"></div>
+</div>
+
+<!-- 던전 지도 -->
+<div id="dmap" class="hidden">
+  <div class="dmtop box"><span id="dmName"></span><span id="dmLoot"></span></div>
+  <div id="dmScroll"><div id="dmInner"><svg id="dmSvg"></svg></div></div>
+  <div class="dmbot"><div id="dmParty" class="dmparty"></div><div class="dmbtns"><button id="dmPot">🧪 물약</button><button id="dmRet" class="warn">⟲ 귀환하기</button></div></div>
+</div>
+
+<!-- 타이틀 -->
+<div id="title" class="hidden">
+  <div class="tlogo"><div class="tsub">철혈 맹약단 재건기</div><h1>용병왕의 길</h1></div>
+  <div id="tSlots" class="tslots"></div>
+  <div class="tfoot">PC: 클릭·WASD 이동 / 휠 확대 · 폰: 탭 이동 · 두 손가락 확대</div>
+</div>
+
+<div id="toast"></div>
+<div id="fade"></div>
+<button id="sndbtn" title="소리">🔊</button>
+
+<script src="js/gamedata.js?v=1"></script>
+<script src="js/game.js?v=1"></script>
+<script src="js/ui.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+/* 용병왕의 길 — 색 테마 · Sunnyside 9-slice 창틀 */
+.box,#hud .hv,#hud .rank,#goal,.card,.slot,.itemrow,.pm,.tslot,#toast div,#bTitle,.dmtop{
+  border:9px solid transparent;border-image:url(../assets/ui/box_lt.png) 3 fill / 9px stretch;image-rendering:pixelated;color:#3b2a1e}
+#hud .hv,#hud .rank,#goal,#toast div,#bTitle{border-width:6px;border-image-width:6px}
+.card,.slot,.itemrow,.pm{border-width:6px;border-image-width:6px}
+.dark,.dark.box{border-image-source:url(../assets/ui/box_dt.png);color:#f3e6cc}
+.white{border-image-source:url(../assets/ui/box_w.png)}
+button{border:6px solid transparent;border-image:url(../assets/ui/box_w.png) 3 fill / 6px stretch;color:#3b2a1e;background:none;font-weight:800;image-rendering:pixelated;transition:transform .06s}
+button:active{transform:translateY(1px)}
+button:hover{filter:brightness(1.06)}
+button.pri{border-image-source:url(../assets/ui/box_lt.png);color:#3b2a1e;filter:hue-rotate(-12deg) saturate(1.6)}
+button.go{background:transparent;color:#1f4a12;filter:none;border-image-source:url(../assets/ui/box_w.png);box-shadow:inset 0 0 0 40px rgba(120,200,90,.35)}
+button.warn{box-shadow:inset 0 0 0 40px rgba(230,110,80,.3)}
+button.sel,.tabs button.sel{box-shadow:inset 0 0 0 40px rgba(255,200,90,.45)}
+button[disabled]{opacity:.5;cursor:default}
+.box{background:transparent}
+.rank{font-family:Georgia,serif}
+.ico{display:inline-block;width:16px;height:16px;border-radius:50%}
+.ico-gold{background:radial-gradient(circle at 35% 35%,#fff2a0,#e8b030 55%,#9a6a10)}
+.ico-fame{background:radial-gradient(circle at 35% 35%,#d8f0ff,#6aa8e8 55%,#2a5a9a);border-radius:3px;transform:rotate(45deg) scale(.8)}
+.good{color:#3f7d2c}.bad{color:#b0392a}.dim{opacity:.6}.gold{color:#9a6a10}
+#title{background:radial-gradient(ellipse at 50% 40%,rgba(40,25,12,.15),rgba(15,9,4,.7))}
+.node{border:5px solid transparent;border-image:url(../assets/ui/box_w.png) 3 fill / 5px stretch;background:none}
+.node.boss{border-image-source:url(../assets/ui/box_dt.png);color:#fff}
+#dmap{background:linear-gradient(#2a1d13ee,#1b120bee)}

@@ -1,0 +1,13 @@
+/* 용병왕의 길 — 연출 애니메이션 (흔들림·팝업·전환) */
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+@keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-5px,2px)}40%{transform:translate(5px,-2px)}60%{transform:translate(-3px,1px)}80%{transform:translate(3px,-1px)}}
+.shake{animation:shake .28s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+.pop{animation:pop .22s ease-out}
+@keyframes toastIn{0%{transform:translateY(-10px);opacity:0}12%{transform:none;opacity:1}85%{opacity:1}100%{opacity:0}}
+#toast div{animation:toastIn 2.8s forwards}
+@keyframes blink{50%{opacity:.25}}
+.dnext{animation:blink 1s infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,209,102,0)}50%{box-shadow:0 0 0 4px rgba(255,209,102,.8)}}
+.glow{animation:glow 1.2s infinite}
+#panel .pbox{animation:pop .18s ease-out}
