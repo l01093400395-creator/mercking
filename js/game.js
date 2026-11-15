@@ -23,7 +23,7 @@ function newGame(name,cls){
     leader:{name:name||'단장',cls,lv:1,exp:0,STR:6,AGI:6,INT:6,CHA:6,pts:0,eq:{wpn:null,off:null,arm:null,acc1:null,acc2:null},sex:'m',look:{hair:'shorthair',hc:1}},
     mercs:[],party:[],inv:[],cons:{potion:2,hipotion:0,feather:0},
     camp:{tier:1,built:{},decor:[]},
-    towns:{t1:{rep:0},t2:{rep:0},t3:{rep:0},t4:{rep:0}},
+    towns:{t1:{rep:0},t2:{rep:0},t3:{rep:0},t4:{rep:0},t5:{rep:0},t6:{rep:0},t7:{rep:0},t8:{rep:0},t9:{rep:0}},
     dailies:[],subs:{},stats:{kills:{},elites:{},clears:{},chests:0,trophy:{},runs:0,wins:0},
     recruits:{},run:null,loc:'camp',arena:0,advanced:false,log:[],ending:false,playSec:0};
   S.leader[D.LCLASS[cls].main]+=4;
@@ -32,14 +32,16 @@ function newGame(name,cls){
   // 시작 동료: 낙천적인 견습생
   const m=genMerc(2,{grade:0,pot:1,pers:'cheer',job:cls==='sword'?'archer':'warrior',name:'로안'});
   m.free=true;S.mercs.push(m);S.party.push(m.id);
-  genDailies();
+  genDailies();S.mainV2=true;S.ores={iron:0,silver:0,obsid:0,flame:0};S.chron=[{day:1,t:'철혈 맹약단 재건 시작. 남은 것은 부러진 깃발과 견습생 하나.'}];
   return S;
 }
 function save(){if(!S)return;try{S.savedAt=Date.now();localStorage.setItem(SAVE_KEY(G.slot),JSON.stringify(S));localStorage.setItem('mercking-cur',String(G.slot));}catch(e){console.warn(e);}}
 function load(n){try{const t=localStorage.getItem(SAVE_KEY(n));if(!t)return null;S=JSON.parse(t);G.slot=n;fixSave();return S;}catch(e){console.warn(e);return null;}}
 function peek(n){try{const t=localStorage.getItem(SAVE_KEY(n));return t?JSON.parse(t):null;}catch(e){return null;}}
 function wipeSlot(n){try{localStorage.removeItem(SAVE_KEY(n));}catch(e){}}
-function fixSave(){
+// 메인 이야기 순서가 바뀐 v2: 옛 저장의 진행 위치를 단계 이름으로 다시 맞춤
+const MAIN_V1=['m1_1','m1_2','m1_3','m1_4','m1_5','m1_6','m2_1','m2_2','m2_3','m2_4','m2_5','m2_6','m3_1','m3_2','m3_3','m3_4','m3_5','m3_6','m4_1','m4_2','m4_3','m4_4','m4_5','m4_6','m5_1','m5_2','m5_3'];
+function fixSave(){S.cq=S.cq||{};if(S.dailyDay==null)S.dailyDay=S.day;S.ores=S.ores||{iron:0,silver:0,obsid:0,flame:0};if(!S.mainV2){const id=MAIN_V1[S.main];const ni=id?D.MAIN.findIndex(m=>m.id===id):D.MAIN.length;if(ni>=0){S.main=ni;S.mainShown=ni;}S.mainV2=true;}S.towns=S.towns||{};for(const k in D.TOWNS)if(!S.towns[k])S.towns[k]={rep:0};
   if(!S.gearV2){S.gearV2=1;for(const it of S.inv){if(it.cls==='shield'){it.slot='off';}
       if(it.slot==='wpn'&&H2.includes(it.cls)&&!it.h2){for(const k of ['atk','mag'])if(it.st[k])it.st[k]=Math.round(it.st[k]*1.3);it.h2=1;}}
     for(const u of [S.leader,...S.mercs]){u.eq.off=u.eq.off||null;for(const a of ['acc1','acc2']){const it=u.eq[a]&&S.inv.find(i=>i.id===u.eq[a]);if(it&&it.cls==='shield'){u.eq[a]=null;const w=u.eq.wpn&&S.inv.find(i=>i.id===u.eq.wpn);if(!u.eq.off&&!(w&&H2.includes(w.cls)))u.eq.off=it.id;}}}}
@@ -58,6 +60,7 @@ function gearStats(u){const st={hp:0,atk:0,mag:0,def:0,spd:0,crit:0,eva:0};
   for(const s of SLOTS){const it=u.eq[s]&&itemById(u.eq[s]);if(!it)continue;const m=1+.08*(it.enh||0),pen=gearPenalty(u,s,it);
     for(const k in it.st)st[k]=(st[k]||0)+it.st[k]*(k==='spd'||k==='crit'||k==='eva'?1:m)*(it.st[k]>0?pen:1);
     if(pen<1&&s==='off')st.spd-=2;}
+  const sb=setBonus(u).st;for(const k in sb)st[k]=(st[k]||0)+sb[k];
   return st;}
 function leaderStats(L){L=L||S.leader;const c=D.LCLASS[L.cls],lv=L.lv;
   let s={hp:90+14*lv+L.STR*7,atk:6+L.STR*2.2+lv*1.2,mag:6+L.INT*2.3+lv*1.2,def:6+lv*1.3+L.STR*.4,spd:28+L.AGI*.7,crit:5+L.AGI*.4,eva:3+L.AGI*.3,cdr:Math.min(.4,L.INT*.006)};
@@ -80,7 +83,7 @@ function mercStats(m){const j=D.JOBS[m.job],gr=D.GRADES[m.grade],po=D.POTENTIAL[
 function roundStats(s){for(const k of ['hp','atk','mag','def'])s[k]=Math.round(s[k]);s.spd=Math.round(s.spd*10)/10;s.crit=Math.round(s.crit*10)/10;s.eva=Math.min(40,Math.round(s.eva*10)/10);return s;}
 function statsOf(u){return u===S.leader?leaderStats():mercStats(u);}
 function power(u){const s=statsOf(u);return Math.round(s.hp*.25+s.atk*2+s.mag*2+s.def*2+s.spd*2);}
-const expNeed=lv=>Math.round(30*Math.pow(lv,1.5));
+const expNeed=lv=>Math.round(30*Math.pow(lv,1.5)*(1+Math.max(0,lv-28)*.14));
 function gainExp(u,x){if(u.lv>=50)return 0;u.exp+=Math.round(x);let ups=0;
   while(u.lv<50&&u.exp>=expNeed(u.lv)){u.exp-=expNeed(u.lv);u.lv++;ups++;if(u===S.leader)u.pts+=3;}
   return ups;}
@@ -92,8 +95,9 @@ function wage(m){let w=D.wageOf(m.lv,m.grade);if(m.wageCut)w*=.6;if(m.free)w*=.6
 function upkeep(){let t=0;for(const m of S.mercs){t+=S.party.includes(m.id)||m.instructor?wage(m):Math.round(wage(m)*.5);}return t;}
 function hireCost(m){return Math.round(D.wageOf(m.lv,m.grade)*4*(1-chaDisc())/10)*10;}
 function healCost(m){let c=D.wageOf(m.lv,m.grade)*2.2;if(S.camp.built.clinic)c*=.5;return Math.round(c/10)*10;}
-function attitude(tk){const t=D.TOWNS[tk];if(!t)return 2;const r=rankIdx(S.rank);if(r>=5)return 3;
-  if(tk==='t1')return r>=1?2:1;const g=rankIdx(t.goodRank);if(r>=g)return 2;if(r>=g-1&&(S.towns[tk].rep||0)>=40)return 1;return 0;}
+function attitude(tk){const t=D.TOWNS[tk];if(!t)return 2;const r=rankIdx(S.rank),rep=(S.towns[tk]&&S.towns[tk].rep)||0;if(r>=5||rep>=600)return 3;
+  let a;if(tk==='t1')a=r>=1?2:1;else{const g=rankIdx(t.goodRank);a=r>=g?2:(r>=g-1&&rep>=40)?1:0;}
+  if(rep>=80)a=Math.max(a,1);if(rep>=260)a=Math.max(a,2);return a;}
 function priceMul(tk){const a=attitude(tk);let m=[1.15,1,.92,.82][a];if(a===0)m-=Math.min(.12,S.leader.CHA*.004);return m*(1-shopDisc());}
 function addGold(n){S.gold=Math.max(0,Math.round(S.gold+n));}
 function addFame(n){n=Math.round(n*(1+S.leader.CHA*.01));S.fame+=n;return n;}
@@ -115,7 +119,7 @@ function genMerc(lv,o){o=o||{};const sex=o.sex||(Math.random()<.4?'f':'m');
 function recruitList(tk){const key=tk;let r=S.recruits[key];
   if(!r||r.day!==S.day){const t=tk==='camp'?Math.max(2,curTier()):D.TOWNS[tk].tier,lr=D.TIER[t].lv;
     const avg=Math.round(avgLv());const n=3+(tk==='camp'&&S.camp.built.tavern?1:0);
-    const gw=[[70,25,5,0],[55,30,13,2],[42,34,19,5],[30,35,25,10]][t-1].slice();
+    const gw=[[70,25,5,0],[55,30,13,2],[42,34,19,5],[30,35,25,10]][Math.min(4,Math.max(1,t))-1].slice();
     if(tk==='camp'&&S.camp.built.tavern){gw[0]-=15;gw[2]+=10;gw[3]+=5;}
     const list=[];for(let i=0;i<n;i++){const lv=clamp(avg-ri(0,3),lr[0],lr[1]);
       list.push(genMerc(lv,{grade:wpick([0,1,2,3],gw),pot:wpick([0,1,2],[60,30,10])}));}
@@ -149,18 +153,38 @@ function genItem(lv,rar,slot,cls){lv=Math.max(1,Math.round(lv));const R=D.RARITY
     else if(cls==='mace'){it.st.atk=Math.round(base*.95);it.st.def=Math.round((1+lv*.35)*m);}
     else it.st.atk=Math.round(base);
     if(H2.includes(cls)){for(const k of ['atk','mag'])if(it.st[k])it.st[k]=Math.round(it.st[k]*1.3);it.h2=1;}
-    const ic=W.ic[Math.min(4,ti)];it.ic=(D.WB(Math.min(4,rar+ (ti>=4?1:0)))+ic[0])*16+ic[1];it.name=W.names[ti];}
+    const V=D.WVAR[cls],vi=ri(0,V.ic.length-1),ic=V.ic[vi];it.ic=(D.WB(Math.min(4,rar+(ti>=4?1:0)))+ic[0])*16+ic[1];it.name=(ti===0&&vi===0?W.names[0]:D.WMAT[ti]+' '+V.nm[vi]);}
   else if(slot==='arm'){cls=cls||pick(Object.keys(D.ARMS));const A=D.ARMS[cls];it.cls=cls;
     it.st.def=Math.round((3+lv*1.0)*m*A.m.def);it.st.hp=Math.round((12+lv*5)*m*A.m.hp);
     if(A.m.eva)it.st.eva=A.m.eva>0?A.m.eva+rar:A.m.eva;if(A.m.mag)it.st.mag=Math.round((2+lv*.8)*m);
-    it.ic=A.ic[Math.min(4,ti)];it.name=A.names[ti];}
+    gvar(it,cls,ti);}
   else{if(slot==='off')cls='shield';cls=cls||pick(Object.keys(D.ACCS));const A=D.ACCS[cls];it.cls=cls;it.slot=cls==='shield'?'off':'acc';
     const f={atk:(2+lv*.6)*m,crit:2+lv*.08+rar,def:(2+lv*.5)*m,hp:(10+lv*4)*m,mag:(2+lv*.7)*m,spd:1+lv*.04+rar*.3,eva:1+lv*.1+rar*.5};
     if(cls==='shield'){f.def*=1.4;f.hp*=1.3;}
     for(const k of A.st)it.st[k]=k==='spd'||k==='crit'||k==='eva'?Math.round(f[k]*10)/10:Math.round(f[k]);
-    it.ic=A.ic[Math.min(4,ti)];it.name=A.names[ti];}
+    gvar(it,cls,ti);}
+  addAffix(it,lv,rar,m);
   it.val=Math.round(D.priceRef(lv)*[.3,.5,.9,1.6,3][rar]);
   return it;}
+function gvar(it,cls,ti){const V=D.GVAR[cls];if(!V)return;const pool=V.ic[Math.min(4,ti)],c=pick(pool);it.ic=c[0]*16+c[1];it.name=V.mat[ti]+' '+pick(V.nm);}
+// 옵션: 희귀(2) 이상 앞말, 영웅(3) 이상 뒷말. 고급(1)은 40%로 앞말
+function affVal(k,lv,m){const f={atk:(2+lv*.6)*m,crit:2+lv*.08,def:(2+lv*.5)*m,hp:(10+lv*4)*m,mag:(2+lv*.7)*m,spd:1+lv*.04,eva:1+lv*.1}[k]*.55;return k==='spd'||k==='crit'||k==='eva'?Math.round(f*10)/10:Math.max(1,Math.round(f));}
+function addAffix(it,lv,rar,m){const add=(A)=>{const a=pick(A);it.st[a.k]=Math.round(((it.st[a.k]||0)+affVal(a.k,lv,m))*10)/10;return a.n;};
+  let pre='',suf='';if(rar>=2||(rar===1&&Math.random()<.4))pre=add(D.AFFIX_PRE);if(rar>=3)suf=add(D.AFFIX_SUF);
+  it.name=(suf?suf+' ':'')+(pre?pre+' ':'')+it.name;}
+function genSetPiece(key,lv,slot){const Z=D.SETS[key],P=Z.p[slot];const it=genItem(lv,3,slot==='acc'&&P.cls==='shield'?'off':slot,P.cls);it.ic=P.ic;it.name=P.n;it.set=key;it.rar=3;return it;}
+function setBonus(u){const cnt={},lv={};for(const s of SLOTS){const it=u.eq[s]&&itemById(u.eq[s]);if(it&&it.set){cnt[it.set]=(cnt[it.set]||0)+1;lv[it.set]=Math.max(lv[it.set]||0,it.lv);}}
+  const st={};for(const k in cnt){const Z=D.SETS[k],f=1+lv[k]*.06;if(cnt[k]>=2)for(const q in Z.b2)st[q]=(st[q]||0)+Z.b2[q]*f;if(cnt[k]>=3)for(const q in Z.b3)st[q]=(st[q]||0)+Z.b3[q]*f;}return {st,cnt};}
+// 스킬서: 사기·배우기·지우기
+function leaderSkills(){const c=D.LCLASS[S.leader.cls];return c.skills.concat((S.leader.bsk||[]).filter(k=>D.SKILLS[k]));}
+function bookPrice(k){return Math.round(D.priceRef(Math.max(5,S.leader.lv))*D.BOOKS[k].p/10)*10;}
+function buyBook(k,price){if(S.gold<price)return '금화가 부족합니다';addGold(-price);S.books=S.books||{};S.books[k]=(S.books[k]||0)+1;save();return null;}
+function learnBook(k,mid){const B=D.BOOKS[k];S.books=S.books||{};if(!(S.books[k]>0))return '스킬서가 없습니다';
+  if(B.who==='L'){const L=S.leader;L.learned=L.learned||[];if(L.learned.includes(k))return '이미 배운 스킬입니다';L.learned.push(k);L.bsk=L.bsk||[];if(L.bsk.length<2)L.bsk.push(k);}
+  else{const m=mercById(mid);if(!m)return '용병을 골라 주세요';if(!B.who.includes(m.job))return D.JOBS[m.job].n+'은(는) 배울 수 없는 스킬입니다';m.sk2=k;}
+  S.books[k]--;save();return null;}
+function equipBook(k){const L=S.leader;L.bsk=L.bsk||[];if(L.bsk.includes(k)){L.bsk=L.bsk.filter(x=>x!==k);return null;}if(L.bsk.length>=2)return '추가 스킬 칸은 2개입니다. 하나를 먼저 빼세요';L.bsk.push(k);return null;}
+function forgetSkill(k,mid){if(mid){const m=mercById(mid);if(m)m.sk2=null;}else{const L=S.leader;L.learned=(L.learned||[]).filter(x=>x!==k);L.bsk=(L.bsk||[]).filter(x=>x!==k);}save();}
 function genUnique(key){const U=D.UNIQUE[key];const it={id:nid('i'),lv:U.lv,rar:4,slot:U.cls==='shield'?'off':U.slot==='acc'?'acc':U.slot,cls:U.cls,enh:0,st:Object.assign({},U.st),ic:U.ic,name:U.n,uniq:key,desc:U.d};
   it.val=Math.round(D.priceRef(U.lv)*3);return it;}
 function rollRarity(bonus){const r=Math.random()*100-(bonus||0);return r<1.2?4:r<6?3:r<20?2:r<48?1:0;}
@@ -174,9 +198,14 @@ function equip(u,itemId,slotHint){const it=itemById(itemId);if(!it||!canEquip(u,
   u.eq[s]=itemId;if(s==='wpn'&&H2.includes(it.cls))u.eq.off=null;return true;}
 function unequip(u,slot){u.eq[slot]=null;}
 function sellItem(id){const it=itemById(id);if(!it||ownerOf(id))return 0;const v=Math.round(it.val*.25*(1+.15*(it.enh||0)));S.inv.splice(S.inv.indexOf(it),1);addGold(v);return v;}
+// 강화: +10까지. 단계별 성공률과 광석(철→은→흑요석→화염 결정)
+const ENH_RATE=[1,.95,.9,.8,.7,.6,.5,.4,.32,.25],ENH_ORE=[['iron',1],['iron',2],['iron',3],['silver',2],['silver',3],['silver',4],['obsid',2],['obsid',3],['flame',2],['flame',3]];
 function enhCost(it){let c=it.val*.3*((it.enh||0)+1);if(S.camp.built.forge&&S.loc==='camp')c*=.85;return Math.round(c/10)*10;}
-function enhance(id){const it=itemById(id);if(!it||(it.enh||0)>=5)return '더 이상 강화할 수 없습니다';const c=enhCost(it);if(S.gold<c)return '금화가 부족합니다';
-  addGold(-c);const ok=Math.random()<[1,.9,.75,.6,.45][it.enh||0];if(ok)it.enh=(it.enh||0)+1;return ok?'ok':'fail';}
+function enhNeed(it){const e=it.enh||0;return e>=10?null:{gold:enhCost(it),ore:ENH_ORE[e][0],n:ENH_ORE[e][1],rate:ENH_RATE[e]};}
+function enhance(id){const it=itemById(id);if(!it||(it.enh||0)>=10)return '더 이상 강화할 수 없습니다';const q=enhNeed(it);if(S.gold<q.gold)return '금화가 부족합니다';
+  S.ores=S.ores||{};if((S.ores[q.ore]||0)<q.n)return D.ORES[q.ore].n+'이(가) 부족합니다 ('+(S.ores[q.ore]||0)+'/'+q.n+')';
+  addGold(-q.gold);S.ores[q.ore]-=q.n;const ok=Math.random()<q.rate;if(ok){it.enh=(it.enh||0)+1;if(it.enh>=8)chron(`장비 +${it.enh} 강화 성공`);}return ok?'ok':'fail';}
+function addOre(k,n){S.ores=S.ores||{};S.ores[k]=(S.ores[k]||0)+n;}
 function invFull(){return S.inv.filter(i=>!ownerOf(i.id)).length>=40;}
 function addItem(it){if(invFull()){addGold(Math.round(it.val*.25));return false;}S.inv.push(it);return true;}
 
@@ -185,7 +214,8 @@ function dungOpen(dk){const d=D.DUNG[dk];if(!d)return false;
   if(d.campTier)return S.camp.tier>=d.campTier;
   if(d.town!=='abyss'&&!townOpen(d.town))return false;
   if(d.rank&&rankIdx(S.rank)<rankIdx(d.rank))return false;
-  if(d.unlock){const i=D.MAIN.findIndex(m=>m.id===d.unlock);if(S.main<i)return false;}
+  if(d.unlock&&D.SUBS[d.unlock]){const q=D.SUBS[d.unlock];const prev=Object.keys(D.SUBS).find(k=>D.SUBS[k].town===q.town&&D.SUBS[k]===D.SUBS[q.req]);const need=q.req||d.unlock;if(!(S.subs[need]&&S.subs[need].state==='claimed'))return false;}
+  else if(d.unlock){const i=D.MAIN.findIndex(m=>m.id===d.unlock);if(S.main<i)return false;}
   return true;}
 /* ---------------- 던전 (방·미로) 생성 — 같은 seed면 같은 지도 ---------------- */
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
@@ -274,17 +304,17 @@ function examEnemies(ek){const e=D.EXAMS[ek];const out=[];if(e.boss)out.push(mak
 class Battle{
   constructor(enemies,opt){opt=opt||{};this.opt=opt;this.t=0;this.units=[];this.ev=[];this.over=0;this.focus=null;
     this.auto=!!S.flags.leaderAuto;this.wait=null;this.speed=S.flags.bspeed||1;this.kills=[];this.log=[];
-    const pu=partyUnits();let fi=0,bi=0;
+    const pu=opt.allies||partyUnits();let fi=0,bi=0;
     for(const u of pu){const isL=u===S.leader;const st=statsOf(u);const row=isL?D.LCLASS[u.cls].row:D.JOBS[u.job].row;
       const hp0=opt.full||u.hp==null?st.hp:Math.min(st.hp,u.hp);if(hp0<=0)continue;
       this.units.push({side:0,ref:u,isL,name:u.name,st,lv:u.lv,maxHp:st.hp,hp:hp0,row,slot:row==='front'?fi++:bi++,g:Math.random()*40,sp:isL?0:20,
-        sk:isL?null:D.JOBS[u.job].skill,cds:{},buffs:[],shield:0,look:u.look,job:isL?null:u.job,cls:isL?u.cls:null,atkType:isL?D.LCLASS[u.cls].atkType:D.JOBS[u.job].atkType,heal:!isL&&D.JOBS[u.job].heal,downedOnce:false,key:isL?'L':u.id});}
+        sk:isL?null:(u.sk2||D.JOBS[u.job].skill),cds:{},buffs:[],shield:0,look:u.look,job:isL?null:u.job,cls:isL?u.cls:null,atkType:isL?D.LCLASS[u.cls].atkType:D.JOBS[u.job].atkType,heal:!isL&&D.JOBS[u.job].heal,downedOnce:false,key:isL?'L':u.id});}
     // 진형: 전열 0~2, 후열 3~5 (저장된 자리 우선)
     {const F=S.formation||{},used=new Set(),al=this.units.filter(x=>x.side===0);
       for(const u of al){const c=F[u.key];if(c!=null&&c>=0&&c<6&&!used.has(c)){u.cell=c;used.add(c);}}
       for(const u of al){if(u.cell!=null)continue;const pref=u.row==='front'?[1,0,2,4,3,5]:[4,3,5,1,0,2];const c=pref.find(k=>!used.has(k));u.cell=c;used.add(c);}
       for(const u of al)u.row=u.cell<3?'front':'back';}
-    this.prep=!opt.sim&&!S.flags.quickStart;
+    this.prep=!opt.sim&&!opt.watch&&!S.flags.quickStart;
     let ef=0,eb=0;
     for(const e of enemies){const row=e.role==='melee'?'front':'back';
       this.units.push({side:1,ref:e,name:e.name,st:e.st,maxHp:e.st.hp,hp:e.st.hp,row,slot:row==='front'?ef++:eb++,g:Math.random()*30,sp:e.boss?30:0,sk:e.sk,cds:{},buffs:[],shield:0,
@@ -307,10 +337,18 @@ class Battle{
       const bl=u.buffs.find(b=>b.k==='bleed');if(bl){u.bleedAcc=(u.bleedAcc||0)+dt;if(u.bleedAcc>=1){u.bleedAcc=0;this.hurt(null,u,Math.max(1,Math.round(u.maxHp*bl.v)),{dot:true});}}}
     for(const u of this.units){if(u.hp<=0||this.over)continue;
       if(u.act){u.act.t+=dt;this.stepAct(u.act);continue;}
+      if(u.eng){const e=u.eng;if(e.hp<=0)u.eng=null;
+        else if(!(e.eng===u&&u.side===1)){const [tx,ty]=this.engPos(u,e);const k=Math.min(1,dt*5);u.x+=(tx-u.x)*k;u.y+=(ty-u.y)*k;}}
+      else if(Math.abs(u.x-u.hx)+Math.abs(u.y-u.hy)>2){const k=Math.min(1,dt*3);u.x+=(u.hx-u.x)*k;u.y+=(u.hy-u.y)*k;}
+      if(!this.bx){const hs=this.units;this.bx=[Math.min(...hs.map(q=>q.hx))-40,Math.max(...hs.map(q=>q.hx))+40,Math.min(...hs.map(q=>q.hy))-50,Math.max(...hs.map(q=>q.hy))+50];}
+      u.x=Math.max(this.bx[0],Math.min(this.bx[1],u.x));u.y=Math.max(this.bx[2],Math.min(this.bx[3],u.y));
       if(this.has(u,'freeze'))continue;
-      const r=u.st.spd*1.25*(this.has(u,'slow')?.5:1)*(this.has(u,'haste')?2:1);u.g+=r*dt;
+      const r=u.st.spd*1.9*(this.has(u,'slow')?.5:1)*(this.has(u,'haste')?2:1);u.g+=r*dt;
       if(u.isL&&u.queued&&u.g>=35){u.g=100;}   // 스킬 예약 시 조금만 차도 바로 시전
       if(u.g>=100){u.g=0;this.begin(u);}}
+    // 겹침 방지: 가까운 유닛끼리 살짝 밀어냄 (실시간 난전이 한 덩어리로 뭉치지 않게)
+    const al=this.units.filter(q=>q.hp>0);for(let i=0;i<al.length;i++)for(let j=i+1;j<al.length;j++){const p=al[i],q=al[j];const dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy)||.01,min=p.side===q.side?46:36;
+      if(d<min){const f=(min-d)/2*Math.min(1,dt*10),nx=dx/d,ny=(dy/d)||(i%2?.6:-.6);const pa=p.act&&p.act.t<.25,qa=q.act&&q.act.t<.25;if(!pa){p.x-=nx*f;p.y-=ny*f;}if(!qa){q.x+=nx*f;q.y+=ny*f;}}}
     this.checkEnd();}
   begin(u){let cmd;
     if(u.isL&&u.queued){const k=u.queued;u.queued=null;cmd=this.availSkills(u).includes(k)?{skill:k,target:this.focus&&this.focus.hp>0?this.focus:null}:null;}
@@ -322,18 +360,20 @@ class Battle{
     for(const k of sk){const s=D.SKILLS[k];if(s.t==='all'&&es.length>=2)return {skill:k};if(s.t==='allies')return {skill:k};}
     for(const k of sk){const s=D.SKILLS[k];if(s.t==='one')return {skill:k,target:this.pickTarget(u,true)};}
     return {target:this.pickTarget(u)};}
-  availSkills(u){if(!u.isL)return [];const c=D.LCLASS[u.cls];return c.skills.filter(k=>!(u.cds[k]>0)&&(!D.SKILLS[k].lv||S.leader.lv>=D.SKILLS[k].lv));}
+  availSkills(u){if(!u.isL)return [];return leaderSkills().filter(k=>!(u.cds[k]>0)&&(!D.SKILLS[k].lv||S.leader.lv>=D.SKILLS[k].lv));}
   ai(u){const es=this.alive(1-u.side),fr=this.alive(u.side);
     if(u.sk&&u.sp>=100){return {skill:u.sk,target:this.pickTarget(u)};}
     if(u.heal){const low=fr.filter(x=>x.hp/x.maxHp<.6).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];if(low)return {heal:low};}
     return {target:this.pickTarget(u)};}
   pickTarget(u,strong){const es=this.alive(1-u.side);if(!es.length)return null;
-    if(u.side===0&&this.focus&&this.focus.hp>0)return this.focus;
+    if(u.side===0&&this.focus&&this.focus.hp>0&&(u.isL||Math.random()<.35))return this.focus;
+    const crowd=t=>this.units.filter(o=>o!==u&&o.side===u.side&&o.hp>0&&((o.act&&o.act.tg===t)||o.eng===t)).length;
     const taunt=es.filter(x=>this.has(x,'taunt'));if(taunt.length&&u.side===1)return pick(taunt);
     if(u.atkType==='slash'||u.role==='melee'){const fr=es.filter(x=>x.row==='front');const pool=fr.length?fr:es;
-      return pool.reduce((a,b)=>Math.abs(a.hy-u.hy)<=Math.abs(b.hy-u.hy)?a:b);}
+      if(u.eng&&u.eng.hp>0&&pool.includes(u.eng)&&crowd(u.eng)<2)return u.eng;   // 붙어 있는 상대와 계속 싸움
+      const sc=t=>Math.abs(t.y-u.y)/40+crowd(t)*1.3+Math.random()*.4;return pool.reduce((a,b)=>sc(a)<=sc(b)?a:b);}
     if(strong){const b=es.find(x=>x.boss);if(b)return b;}
-    if(Math.random()<.4)return es.reduce((a,b)=>a.hp<b.hp?a:b);
+    if(Math.random()<.3)return es.reduce((a,b)=>a.hp<b.hp?a:b);
     return pick(es);}
   leader(){return this.units.find(x=>x.isL&&x.hp>0);}
   // 단장 스킬 버튼: 쓸 수 있으면 다음 행동에 바로 시전 (예약)
@@ -344,18 +384,24 @@ class Battle{
   start(u,cmd){const sk=cmd.skill?D.SKILLS[cmd.skill]:null;
     const melee=!sk?(u.atkType==='slash'):(sk.t==='one'||sk.t==='front2')&&u.atkType==='slash';
     const tg=cmd.target||(cmd.heal)||null;
-    u.act={u,cmd,sk,t:0,melee:melee&&tg&&tg!==u,tg,hit:false,dur:melee?.95:.8,oy:(Math.random()-.5)*36};
+    if(u.oy==null)u.oy=(Math.random()-.5)*36;
+    u.act={u,cmd,sk,t:0,melee:melee&&tg&&tg!==u,tg,hit:false,dur:melee?.62:.6,oy:u.oy,sx:u.x,sy:u.y};if(!(melee&&tg&&tg!==u))u.eng=null;
     if(sk){this.ev.push({k:'skill',u,name:sk.n});if(u.isL)u.cds[cmd.skill]=sk.cd*(1-(u.st.cdr||0));else u.sp=0;}
     u.anim='attack';u.at=0;}
+  // 근접 공격 위치: 같은 적에게 붙은 아군끼리 옆으로 나란히 선다
+  engPos(u,e){const o=this.offFn?this.offFn(u):{x:(u.side===0?-62:62),y:0};
+    const att=this.units.filter(q=>q.side===u.side&&q.hp>0&&(q===u||q.eng===e||(q.act&&q.act.melee&&q.act.tg===e))).sort((p,q)=>this.units.indexOf(p)-this.units.indexOf(q));
+    const n=att.length,i=Math.max(0,att.indexOf(u)),lat=(i-(n-1)/2)*42;
+    return o.x===0?[e.x+lat,e.y+o.y]:[e.x+o.x,e.y+lat];}
   stepAct(a){const u=a.u;
-    if(a.melee&&a.tg){const p=Math.min(1,a.t/.28),back=Math.max(0,(a.t-.7)/.25);
-      const o=this.offFn?this.offFn(u):{x:(u.side===0?-62:62),y:0};const tx=a.tg.x+o.x+(o.x===0?a.oy*1.6:0),ty=a.tg.y+o.y+(o.x===0?0:a.oy);
-      if(a.t<.28){u.x=u.hx+(tx-u.hx)*p;u.y=u.hy+(ty-u.hy)*p;u.anim='walk';}
-      else if(a.t<.7){u.x=tx;u.y=ty;if(u.anim!=='attack'&&u.anim!=='hurt'){u.anim='attack';u.at=0;}}
-      else{u.x=tx+(u.hx-tx)*Math.min(1,back);u.y=ty+(u.hy-ty)*Math.min(1,back);u.anim='walk';}
-      if(!a.hit&&a.t>=.48){a.hit=true;this.resolve(a);}}
-    else{if(!a.hit&&a.t>=.38){a.hit=true;this.resolve(a);}}
-    if(a.t>=a.dur){u.x=u.hx;u.y=u.hy;if(u.anim==='walk')u.anim=null;u.act=null;}}
+    if(a.melee&&a.tg){const [tx,ty]=this.engPos(u,a.tg);
+      const far=Math.hypot(tx-a.sx,ty-a.sy)>20,mv=far?.22:0,p=mv?Math.min(1,a.t/mv):1;
+      if(a.t<mv){u.x=a.sx+(tx-a.sx)*p;u.y=a.sy+(ty-a.sy)*p;u.anim='walk';}
+      else{u.x=tx;u.y=ty;if(u.anim!=='attack'&&u.anim!=='hurt'){u.anim='attack';u.at=0;}}
+      if(!a.hit&&a.t>=mv+.18){a.hit=true;this.resolve(a);}
+      if(a.t>=a.dur+mv){u.eng=a.tg.hp>0?a.tg:null;if(u.anim==='walk')u.anim=null;u.act=null;}return;}
+    else{if(!a.hit&&a.t>=.3){a.hit=true;this.resolve(a);}}
+    if(a.t>=a.dur){if(u.anim==='walk')u.anim=null;u.act=null;}}
   resolve(a){const u=a.u,sk=a.sk,cmd=a.cmd;const es=this.alive(1-u.side),fr=this.alive(u.side);
     if(cmd.heal){const amt=Math.round(this.eff(u,'mag')*1.0);this.healU(u,cmd.heal,amt);u.sp=Math.min(100,u.sp+22);return;}
     if(!sk){if(!a.tg||a.tg.hp<=0)a.tg=this.pickTarget(u);if(a.tg){this.ev.push({k:'shot',u,tg:a.tg,type:u.atkType});this.strike(u,a.tg,1,u.atkType==='magic'?'mag':'atk',{});}
@@ -429,12 +475,12 @@ function afterBattle(b,node){const r=S.run;const win=b.over===1;
       out.fame=Math.round((kind==='boss'?18:kind==='elite'?6:1.9)*D.TIER[d.tier].fameMul);
       const dropP=kind==='boss'?1:kind==='elite'?.4:.12;
       if(Math.random()<dropP){const lv=b.units.find(u=>u.side===1).lv||d.lv[1];const it=genItem(lv,rollRarity(kind==='boss'?18:kind==='elite'?8:0),pick(['wpn','arm','acc']));r.loot.items.push(it);out.items.push(it);}
-      if(kind==='boss'){r.bossDown=true;const it2=Math.random()<.5?genItem(d.lv[1]+1,rollRarity(10),pick(['wpn','arm','acc'])):null;if(it2){r.loot.items.push(it2);out.items.push(it2);}}
+      if(kind==='boss'){r.bossDown=true;const tw=d.town||'t4';const sk=Object.keys(D.SETS).find(k=>D.SETS[k].town===tw);if(sk&&Math.random()<.22){const sp=genSetPiece(sk,d.lv[1]+1,pick(['wpn','arm','acc']));r.loot.items.push(sp);out.items.push(sp);}const it2=Math.random()<.5?genItem(d.lv[1]+1,rollRarity(10),pick(['wpn','arm','acc'])):null;if(it2){r.loot.items.push(it2);out.items.push(it2);}}
       if(kind==='elite')r.elites++;}
     r.loot.gold+=out.gold;r.fame+=out.fame;}
   // 경험치: 살아남은 인원 100%, 쓰러진 인원 50%
   out.exp=Math.round(xp);r.loot.exp+=out.exp;
-  for(const bu of b.units)if(bu.side===0){const ups=gainExp(bu.ref,xp*(bu.hp>0?1:.5)*(bu.ref.lv>maxEnemyLv(b)+6?.4:1));if(ups){bu.ref.hp=Math.min(statsOf(bu.ref).hp,(bu.ref.hp||0)+(bu.hp>0?statsOf(bu.ref).hp*.15:0));out.lvups.push(bu.ref.name+' Lv.'+bu.ref.lv);}}
+  for(const bu of b.units)if(bu.side===0){const ups=gainExp(bu.ref,xp*(bu.hp>0?1:.5)*(bu.ref.lv>maxEnemyLv(b)+8?.15:bu.ref.lv>maxEnemyLv(b)+4?.45:1));if(ups){bu.ref.hp=Math.min(statsOf(bu.ref).hp,(bu.ref.hp||0)+(bu.hp>0?statsOf(bu.ref).hp*.15:0));out.lvups.push(bu.ref.name+' Lv.'+bu.ref.lv);}}
   // 훈련소: 대기 용병도 50%
   if(S.camp.built.training){for(const m of S.mercs)if(!S.party.includes(m.id)&&m.status==='ok')gainExp(m,xp*.5*(S.mercs.some(x=>x.instructor)?1.3:1));}
   return out;}
@@ -466,7 +512,8 @@ function endRun(how){const r=S.run;if(!r)return null;const res={how,gold:0,troGo
   for(const t in r.loot.tro){const n=Math.round(r.loot.tro[t]*keep);if(!n)continue;const g=r.dk?Math.round(D.TIER[D.DUNG[r.dk].tier].inc*D.DUNG[r.dk].dm*D.TROPHY[t].v*.7*n):0;res.troGold+=g;res.tro.push([t,n,g]);S.stats.trophy[t]=(S.stats.trophy[t]||0)+n;}
   const items=how==='wipe'?r.loot.items.filter((_,i)=>i%2===0):r.loot.items;for(const it of items){addItem(it);res.items.push(it);}
   if(how==='wipe')res.fame=Math.round(r.fame*.5);
-  if(how==='clear'&&r.dk){const d=D.DUNG[r.dk];const bonus=Math.round(8*D.TIER[d.tier].fameMul);res.fame+=bonus;S.stats.clears[r.dk]=(S.stats.clears[r.dk]||0)+1;}
+  if(r.dk){const c=S.stats.clears[r.dk]||0;if(c>=4)res.fame=Math.round(res.fame*(c>=8?.55:.75));}
+  if(how==='clear'&&r.dk){const d=D.DUNG[r.dk];const bonus=Math.round(8*D.TIER[d.tier].fameMul);res.fame+=bonus;if(!S.stats.clears[r.dk])chron(`${d.n} 첫 정복 — ${D.BOSS[d.boss].n} 처치`);S.stats.clears[r.dk]=(S.stats.clears[r.dk]||0)+1;}
   addGold(res.gold+res.troGold);res.fame=addFame(res.fame);
   if(r.dk){const tk=D.DUNG[r.dk].town;if(S.towns[tk])S.towns[tk].rep=(S.towns[tk].rep||0)+(how==='clear'?10:4);}
   for(const k in r.kills){S.stats.kills[k]=(S.stats.kills[k]||0)+r.kills[k];}
@@ -484,18 +531,18 @@ function endRun(how){const r=S.run;if(!r)return null;const res={how,gold:0,troGo
   save();return res;}
 function nextDay(){const out={upkeep:upkeep(),tax:campTax()};const pay=Math.min(S.gold,out.upkeep);out.unpaid=out.upkeep-pay;addGold(-pay+out.tax);
   S.day++;for(const m of S.mercs){if(m.status==='inj'){m.injDays--;if(m.injDays<=0){m.status='ok';m.injDays=0;}}}
-  out.dailyDone=claimDailies();genDailies();return out;}
+  out.dailyDone=claimDailies();if(S.day-(S.dailyDay||0)>=5||!S.dailies.length)genDailies();return out;}
 function restDay(){const res=nextDay();save();return res;}
 function treat(id){const m=mercById(id);if(!m||m.status!=='inj')return '치료할 필요가 없습니다';const c=healCost(m);if(S.gold<c)return '금화가 부족합니다';addGold(-c);m.status='ok';m.injDays=0;return null;}
 
 /* ---------------- 퀘스트 ---------------- */
 function curMain(){return D.MAIN[S.main]||null;}
-function genDailies(){const t=curTier();const open=Object.keys(D.DUNG).filter(k=>dungOpen(k)&&D.DUNG[k].tier>=Math.max(1,t-1)&&D.DUNG[k].town!=='abyss');
-  if(!open.length)open.push('d_forest');const n=3+(S.camp.built.board?1:0);S.dailies=[];const used={};
+function genDailies(){S.dailyDay=S.day;const t=curTier();const open=Object.keys(D.DUNG).filter(k=>dungOpen(k)&&D.DUNG[k].tier>=Math.max(1,t-1)&&D.DUNG[k].town!=='abyss');
+  if(!open.length)open.push('d_forest');const n=4+(S.camp.built.board?1:0);S.dailies=[];const used={};
   for(let i=0;i<n;i++){let tp=pick(D.DAILY);let tries=0;while(used[tp.type]&&tries++<6)tp=pick(D.DAILY);used[tp.type]=1;
-    const dk=pick(open),c=ri(tp.count[0],tp.count[1]);const tier=D.DUNG[dk].tier;
+    const dk=pick(open),c=Math.round(ri(tp.count[0],tp.count[1])*2.2);const tier=D.DUNG[dk].tier;
     S.dailies.push({type:tp.type,dk,count:c,prog:0,done:false,claimed:false,n:tp.n,goal:tp.goal(D.DUNG[dk].n,c),
-      gold:Math.round(D.TIER[tier].inc*.16*rnd(.85,1.2)/10)*10,fame:Math.round(10*D.TIER[tier].fameMul)});}}
+      gold:Math.round(D.TIER[tier].inc*.28*rnd(.85,1.2)/10)*10,fame:Math.round(50*D.TIER[tier].fameMul)});}}
 function claimDailies(){const out=[];for(const q of S.dailies)if(q.done&&!q.claimed){q.claimed=true;addGold(q.gold);addFame(q.fame);out.push(q);}return out;}
 function progressQuests(r,how,res){const kills=Object.values(r.kills).reduce((a,b)=>a+b,0);
   for(const q of S.dailies){if(q.done)continue;
@@ -505,7 +552,7 @@ function progressQuests(r,how,res){const kills=Object.values(r.kills).reduce((a,
     if(q.type==='clear'&&r.dk===q.dk&&r.bossDown)q.prog+=1;
     if(q.type==='floor')q.prog+=r.rooms;
     if(q.prog>=q.count){q.prog=q.count;q.done=true;}}
-  res.daily=claimDailies();
+  res.daily=claimDailies();cqProgress(r,kills);
   for(const k in S.subs){const s=S.subs[k],q=D.SUBS[k];if(s.state!=='active')continue;
     if(q.type==='kill'&&r.dk===q.d)s.prog+=kills;
     if(q.type==='elite'&&r.dk===q.d)s.prog+=r.elites;
@@ -517,21 +564,23 @@ function progressQuests(r,how,res){const kills=Object.values(r.kills).reduce((a,
   const m=curMain();if(m&&m.type==='clear'&&r.dk===m.d&&r.bossDown&&how!=='wipe'){res.main=m;advanceMain();}
   checkMain();}
 function subCheck(){for(const k in S.subs){const s=S.subs[k],q=D.SUBS[k];if(s.state!=='active')continue;
-  if(q.type==='decor')s.prog=decorPts();if(q.type==='camp')s.prog=S.camp.tier;if(s.prog>=q.count){s.prog=q.count;s.state='done';}}}
+  if(q.type==='decor')s.prog=decorPts();if(q.type==='camp')s.prog=S.camp.tier;if(q.type==='hire')s.prog=S.mercs.length;if(s.prog>=q.count){s.prog=q.count;s.state='done';}}}
 function acceptSub(k){if(!S.subs[k])S.subs[k]={state:'active',prog:0};subCheck();}
-function claimSub(k){const s=S.subs[k],q=D.SUBS[k];if(!s||s.state!=='done')return null;s.state='claimed';const rw=q.reward,got=[];
+function claimSub(k){const s=S.subs[k],q=D.SUBS[k];if(!s||s.state!=='done')return null;s.state='claimed';chron(`${D.TOWNS[q.town].n} 의뢰 「${q.n}」 해결 (${q.npc})`);const rw=q.reward,got=[];
   if(rw.gold){addGold(rw.gold);got.push(fmt(rw.gold)+' G');}
   if(rw.item){S.cons[rw.item]=(S.cons[rw.item]||0)+1;got.push(D.CONSUM[rw.item].n);}
   if(rw.uniq){const it=genUnique(rw.uniq);addItem(it);got.push(it.name);}
   if(rw.decor){S.camp.decor.push(rw.decor);got.push('장식: '+D.DECOR[rw.decor].n);}
-  addFame(15*D.TIER[D.TOWNS[q.town].tier].fameMul);S.towns[q.town].rep+=15;return got;}
+  addFame(60*D.TIER[D.TOWNS[q.town].tier].fameMul);S.towns[q.town].rep+=15;return got;}
 let mainDone=[];  // 방금 끝난 메인 단계 (ui가 대사 표시)
-function advanceMain(){const m=curMain();if(!m)return;mainDone.push(m);S.main++;
+function advanceMain(){const m=curMain();if(!m)return;mainDone.push(m);S.main++;{const tw=(m.at||'').split(':')[0]||(m.d&&D.DUNG[m.d]&&D.DUNG[m.d].town);const tr=D.TOWNS[tw]?D.TOWNS[tw].tier:Math.max(1,rankIdx(S.rank));addFame(30*D.TIER[Math.min(4,tr)].fameMul);}
   if(m.id==='m2_5'){const g=genMerc(Math.max(18,Math.round(avgLv())),{grade:3,pot:2,pers:'loyal',job:'guard',name:'가렛',sex:'m',hair:'shorthair',hc:4});
     if(S.mercs.length>=maxRoster())S.flags.garretWait=true;S.mercs.push(g);const w=genItem(g.lv,2,'wpn','sword');S.inv.push(w);equip(g,w.id);const a=genItem(g.lv,2,'arm','heavy');S.inv.push(a);equip(g,a.id);
     if(S.party.length<4)S.party.push(g.id);}
+  if(m.id==='m5_6'){const a=genMerc(Math.max(46,Math.round(avgLv())),{grade:3,pot:2,pers:'loyal',job:'warrior',name:'아르칸',sex:'m',hair:'shorthair',hc:6});S.mercs.push(a);const w=genItem(a.lv,4,'wpn','sword');w.name='다시 벼린 맹약의 검';S.inv.push(w);equip(a,w.id);const ar=genItem(a.lv,3,'arm','heavy');S.inv.push(ar);equip(a,ar.id);if(S.party.length<4)S.party.push(a.id);chron('전대 단장 아르칸이 깨어나 맹약단에 합류');}
+  if(m.id==='m4_8')chron('아버지의 편지 — 맹약단이 무너진 진짜 이유를 알게 되다');if(m.id==='m4_11')chron('피라미드 벽화 — 발테르와 심연 교단의 관계가 드러나다');if(m.id==='m3_8')chron('세계수의 맹약 — 맹약단은 봉인의 수호자였다');
   if(m.id==='m5_3'){S.rank='S';S.ending=true;}
-  genDailies();}
+  if(!S.dailies||!S.dailies.length)genDailies();}
 function checkMain(){let m=curMain();let guard=0;
   while(m&&guard++<5){let ok=false;
     if(m.type==='hire')ok=partyUnits().length>=m.count;
@@ -539,9 +588,23 @@ function checkMain(){let m=curMain();let guard=0;
     if(!ok)break;advanceMain();m=curMain();}
   subCheck();}
 function examReady(){const m=curMain();if(!m||m.type!=='exam')return null;const p=D.PROMO[S.rank];return {exam:m.exam,fame:p.fame,ok:S.fame>=p.fame,town:D.EXAMS[m.exam].town};}
-function passExam(ek){const m=curMain();if(m&&m.type==='exam'&&m.exam===ek){const p=D.PROMO[S.rank];S.rank=p.next;advanceMain();checkMain();return true;}return false;}
+function passExam(ek){const m=curMain();if(m&&m.type==='exam'&&m.exam===ek){const p=D.PROMO[S.rank];S.rank=p.next;chron(`${S.rank}등급 승급!`);S.flags.celebrate=S.rank;for(const k in D.TOWNS)if(D.TOWNS[k].req===S.rank&&!['t1','t2','t3','t4'].includes(k))chron(`새 지역 「${D.TOWNS[k].n}」 가는 길이 열렸다`);advanceMain();checkMain();return true;}return false;}
 function talkMain(place){const m=curMain();if(m&&m.type==='talk'&&m.at===place){advanceMain();checkMain();return m;}return null;}
 
+
+/* ---------------- 대륙 의뢰 ---------------- */
+function contOf(tk){return D.TOWNS[tk]&&D.TOWNS[tk].east?'east':'west';}
+function cqCur(c){S.cq=S.cq||{};const st=S.cq[c]||(S.cq[c]={i:0,state:null,prog:0});const q=D.CQ[c].steps[st.i];return q?{q,st}:null;}
+function cqOk(q){return rankIdx(S.rank)>=rankIdx(q.rank||'F');}
+function cqAccept(c){const x=cqCur(c);if(!x||x.st.state)return;x.st.state='active';x.st.prog=0;}
+function cqClaim(c){const x=cqCur(c);if(!x)return null;const {q,st}=x;if(!(st.state==='done'||(q.type==='deliver'&&st.state==='active')))return null;
+  const rw=q.reward||{},got=[];if(rw.gold){addGold(rw.gold);got.push(fmt(rw.gold)+' G');}if(rw.item){S.cons[rw.item]=(S.cons[rw.item]||0)+1;got.push(D.CONSUM[rw.item].n);}if(rw.decor){S.camp.decor.push(rw.decor);got.push('장식: '+D.DECOR[rw.decor].n);}
+  const tw=q.type==='deliver'?q.to:q.town;addFame(45*D.TIER[Math.min(4,D.TOWNS[tw].tier||1)].fameMul);
+  for(const k in D.TOWNS)if(contOf(k)===c&&S.towns[k])S.towns[k].rep=(S.towns[k].rep||0)+(st.i===D.CQ[c].steps.length-1?120:25);got.push((c==='west'?'서방':'동방')+' 모든 마을 호감 ↑');
+  chron(`대륙 의뢰 「${D.CQ[c].n}」 — ${q.n} 완료`);st.i++;st.state=null;st.prog=0;S.cqDone=S.cqDone||{};S.cqDone[c]=st.i;return got;}
+function cqProgress(r,kills){for(const c in D.CQ){const x=cqCur(c);if(!x||x.st.state!=='active')continue;const {q,st}=x;
+  if(q.type==='kill'&&r.dk===q.d)st.prog+=kills;if(q.type==='elite'&&r.dk===q.d)st.prog+=r.elites||0;if(q.type==='clear'&&r.dk===q.d&&r.bossDown)st.prog+=1;if(q.type==='trophy')st.prog+=(r.loot.tro[q.tro]||0);
+  if(st.prog>=q.count){st.prog=q.count;st.state='done';}}}
 /* ---------------- 집결지 ---------------- */
 function buildable(){const out=[];for(const k in D.BUILDS){const b=D.BUILDS[k];if(b.tier<=S.camp.tier&&!S.camp.built[k])out.push(k);}return out;}
 function build(k){const b=D.BUILDS[k];if(!b||S.camp.built[k])return '이미 지었습니다';if(b.tier>S.camp.tier)return '집결지 단계가 부족합니다';
@@ -549,7 +612,7 @@ function build(k){const b=D.BUILDS[k];if(!b||S.camp.built[k])return '이미 지�
 function campNext(){const t=D.CAMP_TIERS[S.camp.tier+1];if(!t)return null;const n=t.need;
   const st={tier:S.camp.tier+1,name:t.n,reward:t.reward,rank:n.rank,rankOk:rankIdx(S.rank)>=rankIdx(n.rank),build:n.build.map(k=>[k,!!S.camp.built[k]]),decor:decorPts(),decorNeed:n.decor,cost:n.cost};
   st.ok=st.rankOk&&st.build.every(b=>b[1])&&st.decor>=n.decor&&S.gold>=n.cost;return st;}
-function campUpgrade(){const st=campNext();if(!st||!st.ok)return '조건이 부족합니다';addGold(-st.cost);S.camp.tier++;checkMain();save();return null;}
+function campUpgrade(){const st=campNext();if(!st||!st.ok)return '조건이 부족합니다';addGold(-st.cost);S.camp.tier++;chron(`집결지 ${S.camp.tier}단계 「${D.CAMP_TIERS[S.camp.tier].n}」 완성`);checkMain();save();return null;}
 function decorPrice(k){return D.DECOR[k].price[S.camp.tier-1];}
 function buyDecor(k){const p=decorPrice(k);if(!p)return '아직 살 수 없습니다';if(D.DECOR[k].big&&S.camp.decor.includes(k))return '풍차는 하나만 세울 수 있습니다';if(S.gold<p)return '금화가 부족합니다';if(S.camp.decor.length>=36)return '장식 자리가 가득 찼습니다';addGold(-p);S.camp.decor.push(k);subCheck();save();return null;}
 
@@ -559,14 +622,58 @@ function mercLine(m,place){const L=D.LINES[m.pers];let pool;
   else{pool=L.ok.slice();if(place&&L[place])pool=pool.concat(L[place],L[place]);if(Math.random()<.3)pool=pool.concat(D.JOB_LINES[m.job]);if(D.GRADE_LINES[m.grade]&&Math.random()<.2)pool=pool.concat(D.GRADE_LINES[m.grade]);
     if(m.falls>=1&&m.falls<3&&Math.random()<.25)pool=['이 흉터 말이야? 지난번 던전에서 생긴 거야. 별거 아냐.'];}
   return pick(pool);}
-function townLine(tk,role){const T=D.TOWN_TALK[tk];if(!T)return '...';const a=attitude(tk);return pick(T[role][a]);}
+function townLine(tk,role,mf){const T=D.TOWN_TALK[tk];if(!T)return '...';const a=attitude(tk);const r=Math.random();
+  const pl=progressLines(tk);if(pl.length&&r<.2)return pick(pl);
+  const c=contOf(tk);
+  if(role==='folk'){if(mf&&D.TYPE_TALK[mf]&&r<.32)return pick(D.TYPE_TALK[mf]);
+    const pool=[];const L=T.folk||[];pool.push(...(L[Math.min(a,L.length-1)]||[]));const M=D.FOLK_MORE[tk];if(M)pool.push(...M[Math.min(a,M.length-1)]);
+    const C=D.CONT_TALK[c];const cl=Math.min(3,Math.max(a,((S.cqDone||{})[c]||0)>=D.CQ[c].steps.length?3:a));if(C&&r<.75)pool.push(...C[cl]);
+    return pick(pool.length?pool:['...']);}
+  const L=T[role]||T.folk;const pool=[...(L[Math.min(a,L.length-1)]||[])];
+  if(a>=2){const X=(role==='guard'?D.GUARD_MORE:D.MERCH_MORE)[tk];if(X)pool.push(...X);}
+  return pick(pool.length?pool:['...']);}
+// 진행 상황에 따라 바뀌는 소문 — 성장을 체감하게
+function progressLines(tk){const L=[],cl=S.stats.clears||{},nm=S.leader.name;const bossTalk={d_forest:'숲길의 거대 슬라임이 사라졌대!',d_wolf:'늑대 소굴 우두머리가 쓰러졌다지?',d_camp:'야영지 산적 두목을 누가 잡았대.',d_mine:'제1갱도가 다시 열렸어!',d_goblin:'고블린 대장이 쫓겨났대!',d_crystal:'수정 동굴 깊은 곳까지 다녀온 용병단이 있대.',d_dock:'부두 창고 밀수꾼들이 싹 잡혔어.',d_wreck:'블랙솔트 해적선이 결국 무너졌대!',d_temple:'수몰된 신전의 괴물이 잠들었대.',d_sewer:'하수도 괴물 소리가 이제 안 들려.',d_waste:'황무지 추방자들이 잠잠해졌대.',d_fort:'타락한 기사단 요새가 함락됐대!',d_ruin:'고대 유적에서 살아 돌아온 사람들이 있대!',d_mist:'안개 협곡을 건넌 용병단이 있대.',d_nest:'용의 둥지... 진짜 용을 쓰러뜨렸대!!'};
+  for(const k in cl)if(cl[k]&&bossTalk[k]&&D.DUNG[k]&&(D.DUNG[k].town===tk||D.DUNG[k].tier>=4))L.push(bossTalk[k]+' '+nm+' 단장 얘기 들었어?');
+  const n=S.mercs.length;if(n>=8)L.push(`철혈 맹약단 용병이 ${n}명이나 된대.`);if(n>=15)L.push('맹약단 행진하는 거 봤어? 줄이 끝이 없더라!');
+  if(S.camp.tier>=3)L.push('맹약단 집결지가 거의 마을만 해졌대.');if(S.camp.tier>=4)L.push('맹약단 본성 봤어? 돌로 쌓은 성이래!');
+  if(S.advanced)L.push(`${nm} 단장이 전직했대. 기운이 달라졌어.`);if((S.arena||0)>0)L.push('투기장에서 맹약단이 이겼대!');
+  {const c=contOf(tk),n=(S.cqDone||{})[c]||0,st=D.CQ[c].steps;if(n>0){const q=st[n-1];L.push(`맹약단이 「${q.n}」 일을 해결했대. ${D.CQ[c].n} 소동이 좀 가라앉겠지?`);}if(n>=st.length)L.push(c==='west'?'서방의 균열이 닫혔대! 다 맹약단 덕분이야.':'동방의 봉인이 다시 섰다 하오. 맹약단 덕이오.');}
+  const ri=rankIdx(S.rank);if(ri>=2)L.push(`맹약단이 벌써 ${S.rank}등급이래. 처음엔 F였는데!`);if(S.day>=30)L.push(`맹약단이 다시 일어선 지 벌써 ${S.day}일째래.`);
+  return L;}
 
+
+/* ---------------- 달력 · 연대기 · 칭호 ---------------- */
+// 1년 = 4달 × 30일
+const MONTHS=['새싹달','햇살달','수확달','서리달'];
+function cal(day){day=day||S.day;const d=day-1;return {y:Math.floor(d/120)+1,m:Math.floor((d%120)/30),d:d%30+1,mn:MONTHS[Math.floor((d%120)/30)]};}
+function calStr(day,short){const c=cal(day);return short?`${c.mn} ${c.d}일`:`${c.y}년차 ${c.mn} ${c.d}일`;}
+// 비밀 경매장: 명성 C등급 이상, 매달 20~22일. 짝수 달 = 항구 뒷골목, 홀수 달 = 황성 지하
+function auctionOpen(){const c=cal();return rankIdx(S.rank)>=rankIdx('C')&&c.d>=20&&c.d<=22;}
+function auctionTown(){return cal().m%2===0?'t3':'t4';}
+function chron(t){S.chron=S.chron||[];S.chron.push({day:S.day,t});if(S.chron.length>200)S.chron.shift();}
+const TITLES=[
+  {k:'rookie',n:'풋내기 단장',ok:()=>true},
+  {k:'wolf',n:'늑대 사냥꾼',ok:()=>(S.stats.clears.d_wolf||0)>0},
+  {k:'miner',n:'광산의 은인',ok:()=>(S.stats.clears.d_mine||0)>0},
+  {k:'pirate',n:'해적 소탕자',ok:()=>(S.stats.clears.d_wreck||0)>0},
+  {k:'knight',n:'타락 기사의 심판자',ok:()=>(S.stats.clears.d_fort||0)>0},
+  {k:'dragon',n:'용을 쓰러뜨린 자',ok:()=>(S.stats.clears.d_nest||0)>0},
+  {k:'champ',n:'투기장의 왕',ok:()=>(S.arena||0)>0},
+  {k:'helper',n:'마을의 해결사',ok:()=>Object.values(S.subs).filter(x=>x.state==='claimed').length>=8},
+  {k:'army',n:'대군단의 주인',ok:()=>S.mercs.length>=15},
+  {k:'castle',n:'성주',ok:()=>S.camp.tier>=4},
+  {k:'gambler',n:'행운의 도박사',ok:()=>((S.casino||{}).wins||0)>=10},
+  {k:'angler',n:'항구의 낚시꾼',ok:()=>((S.fish||{}).total||0)>=15},
+  {k:'legend',n:'전설의 용병',ok:()=>rankIdx(S.rank)>=5}];
+function titles(){return TITLES.filter(t=>t.ok());}
+function title(){const own=titles();const sel=own.find(t=>t.k===S.title);return (sel||own[own.length-1]).n;}
 /* ---------------- 단장 전직 ---------------- */
-function advance(cls){const c=D.LCLASS[cls];if(!c||c.base!==S.leader.cls)return false;S.leader.cls=cls;S.advanced=true;return true;}
+function advance(cls){const c=D.LCLASS[cls];if(!c||c.base!==S.leader.cls)return false;S.leader.cls=cls;S.advanced=true;chron(`단장 전직 — ${c.n}`);return true;}
 
 return {get S(){return S;},set S(v){S=v;},slot:1,D,rnd,ri,pick,clamp,fmt,rankIdx,newGame,save,load,peek,wipeSlot,SLOTS,H2,wpnOk,shieldOk,equipWhy,gearWarn,itemById,statsOf,leaderStats,mercStats,power,expNeed,gainExp,
   wage,upkeep,hireCost,healCost,attitude,priceMul,addGold,addFame,maxRoster,curTier,townOpen,decorPts,campTax,genMerc,recruitList,hire,fire,mercById,canFight,partyUnits,
-  genItem,genUnique,rollRarity,canEquip,ownerOf,equip,unequip,sellItem,enhCost,enhance,addItem,invFull,dungOpen,genDungeon,roomById,visitRoom,trapDetect,trapHit,trapDisarm,genEnemies,examEnemies,makeEnemy,Battle,simulate,
-  startRun,startSpecial,afterBattle,nodeEvent,campRest,useConsumable,endRun,restDay,treat,curMain,genDailies,acceptSub,claimSub,subCheck,checkMain,examReady,passExam,talkMain,
+  cal,calStr,auctionOpen,auctionTown,chron,titles,title,TITLES,genItem,genUnique,genSetPiece,setBonus,leaderSkills,bookPrice,buyBook,learnBook,equipBook,forgetSkill,rollRarity,canEquip,ownerOf,equip,unequip,sellItem,enhCost,enhNeed,enhance,addOre,addItem,invFull,dungOpen,genDungeon,roomById,visitRoom,trapDetect,trapHit,trapDisarm,genEnemies,examEnemies,makeEnemy,Battle,simulate,
+  startRun,startSpecial,afterBattle,nodeEvent,campRest,useConsumable,endRun,restDay,treat,curMain,genDailies,acceptSub,claimSub,subCheck,checkMain,contOf,cqCur,cqOk,cqAccept,cqClaim,examReady,passExam,talkMain,
   get mainDone(){return mainDone;},clearMainDone(){mainDone=[];},advanceMain,buildable,build,campNext,campUpgrade,decorPrice,buyDecor,mercLine,townLine,advance,applyFallStatus,partyAliveUnits};
 })();
