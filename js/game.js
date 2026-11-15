@@ -20,7 +20,7 @@ let S=null;
 const SAVE_KEY=n=>'mercking-slot'+n;
 function newGame(name,cls){
   S={ver:1,slot:G.slot,name:name||'단장',day:1,gold:600,fame:0,rank:'F',main:0,mainShown:-1,flags:{},
-    leader:{name:name||'단장',cls,lv:1,exp:0,STR:6,AGI:6,INT:6,CHA:6,pts:0,eq:{wpn:null,arm:null,acc1:null,acc2:null},sex:'m',look:{hair:'shorthair',hc:1}},
+    leader:{name:name||'단장',cls,lv:1,exp:0,STR:6,AGI:6,INT:6,CHA:6,pts:0,eq:{wpn:null,off:null,arm:null,acc1:null,acc2:null},sex:'m',look:{hair:'shorthair',hc:1}},
     mercs:[],party:[],inv:[],cons:{potion:2,hipotion:0,feather:0},
     camp:{tier:1,built:{},decor:[]},
     towns:{t1:{rep:0},t2:{rep:0},t3:{rep:0},t4:{rep:0}},
@@ -39,15 +39,25 @@ function save(){if(!S)return;try{S.savedAt=Date.now();localStorage.setItem(SAVE_
 function load(n){try{const t=localStorage.getItem(SAVE_KEY(n));if(!t)return null;S=JSON.parse(t);G.slot=n;fixSave();return S;}catch(e){console.warn(e);return null;}}
 function peek(n){try{const t=localStorage.getItem(SAVE_KEY(n));return t?JSON.parse(t):null;}catch(e){return null;}}
 function wipeSlot(n){try{localStorage.removeItem(SAVE_KEY(n));}catch(e){}}
-function fixSave(){S.cons=S.cons||{};S.stats=S.stats||{kills:{},elites:{},clears:{},chests:0,trophy:{}};S.log=S.log||[];
+function fixSave(){
+  if(!S.gearV2){S.gearV2=1;for(const it of S.inv){if(it.cls==='shield'){it.slot='off';}
+      if(it.slot==='wpn'&&H2.includes(it.cls)&&!it.h2){for(const k of ['atk','mag'])if(it.st[k])it.st[k]=Math.round(it.st[k]*1.3);it.h2=1;}}
+    for(const u of [S.leader,...S.mercs]){u.eq.off=u.eq.off||null;for(const a of ['acc1','acc2']){const it=u.eq[a]&&S.inv.find(i=>i.id===u.eq[a]);if(it&&it.cls==='shield'){u.eq[a]=null;const w=u.eq.wpn&&S.inv.find(i=>i.id===u.eq.wpn);if(!u.eq.off&&!(w&&H2.includes(w.cls)))u.eq.off=it.id;}}}}
+  S.cons=S.cons||{};S.stats=S.stats||{kills:{},elites:{},clears:{},chests:0,trophy:{}};S.log=S.log||[];
   for(const k of ['kills','elites','clears','trophy'])S.stats[k]=S.stats[k]||{};}
 
 /* ---------------- 능력치 ---------------- */
-const SLOTS=['wpn','arm','acc1','acc2'];
+const SLOTS=['wpn','off','arm','acc1','acc2'];
+const H2=['axe','bow','staff'];  // 두손 무기
+const SHIELD_OK={warrior:1,guard:1,sword:1,guardian:1,berserker:1,warlord:1};
+function wpnOk(u,cls){const allow=u===S.leader?D.LCLASS[u.cls].wpn:D.JOBS[u.job].wpn;return allow.includes(cls);}
+function shieldOk(u){return !!SHIELD_OK[u===S.leader?u.cls:u.job];}
+function gearPenalty(u,s,it){if(s==='wpn'&&!wpnOk(u,it.cls))return .6;if(s==='off'&&!shieldOk(u))return .6;return 1;}
 function itemById(id){return S.inv.find(i=>i.id===id);}
 function gearStats(u){const st={hp:0,atk:0,mag:0,def:0,spd:0,crit:0,eva:0};
-  for(const s of SLOTS){const it=u.eq[s]&&itemById(u.eq[s]);if(!it)continue;const m=1+.08*(it.enh||0);
-    for(const k in it.st)st[k]=(st[k]||0)+it.st[k]*(k==='spd'||k==='crit'||k==='eva'?1:m);}
+  for(const s of SLOTS){const it=u.eq[s]&&itemById(u.eq[s]);if(!it)continue;const m=1+.08*(it.enh||0),pen=gearPenalty(u,s,it);
+    for(const k in it.st)st[k]=(st[k]||0)+it.st[k]*(k==='spd'||k==='crit'||k==='eva'?1:m)*(it.st[k]>0?pen:1);
+    if(pen<1&&s==='off')st.spd-=2;}
   return st;}
 function leaderStats(L){L=L||S.leader;const c=D.LCLASS[L.cls],lv=L.lv;
   let s={hp:90+14*lv+L.STR*7,atk:6+L.STR*2.2+lv*1.2,mag:6+L.INT*2.3+lv*1.2,def:6+lv*1.3+L.STR*.4,spd:28+L.AGI*.7,crit:5+L.AGI*.4,eva:3+L.AGI*.3,cdr:Math.min(.4,L.INT*.006)};
@@ -99,7 +109,7 @@ function genMerc(lv,o){o=o||{};const sex=o.sex||(Math.random()<.4?'f':'m');
   const m={id:nid('m'),name:o.name||(pick(sex==='f'?D.NAMES_F:D.NAMES_M)+pick(D.SURN)),sex,job,
     grade:o.grade??0,pot:o.pot??0,pers:o.pers||pick(D.PERS_KEYS),lv,exp:0,
     look:{o:D.JOBS[job].outfit,hair:o.hair||pick(D.HAIRS),hc:o.hc??ri(0,6),sk:o.sk??pick([0,0,0,1,1,2,3,4])},
-    eq:{wpn:null,arm:null,acc1:null,acc2:null},falls:0,status:'ok',injDays:0,seq:false,dis:false};
+    eq:{wpn:null,off:null,arm:null,acc1:null,acc2:null},falls:0,status:'ok',injDays:0,seq:false,dis:false};
   if(sex==='f'&&!o.hair)m.look.hair=pick(['longhair','curlyhair','bowlhair','mophair']);
   return m;}
 function recruitList(tk){const key=tk;let r=S.recruits[key];
@@ -138,26 +148,30 @@ function genItem(lv,rar,slot,cls){lv=Math.max(1,Math.round(lv));const R=D.RARITY
     else if(cls==='axe'){it.st.atk=Math.round(base*1.12);}
     else if(cls==='mace'){it.st.atk=Math.round(base*.95);it.st.def=Math.round((1+lv*.35)*m);}
     else it.st.atk=Math.round(base);
+    if(H2.includes(cls)){for(const k of ['atk','mag'])if(it.st[k])it.st[k]=Math.round(it.st[k]*1.3);it.h2=1;}
     const ic=W.ic[Math.min(4,ti)];it.ic=(D.WB(Math.min(4,rar+ (ti>=4?1:0)))+ic[0])*16+ic[1];it.name=W.names[ti];}
   else if(slot==='arm'){cls=cls||pick(Object.keys(D.ARMS));const A=D.ARMS[cls];it.cls=cls;
     it.st.def=Math.round((3+lv*1.0)*m*A.m.def);it.st.hp=Math.round((12+lv*5)*m*A.m.hp);
     if(A.m.eva)it.st.eva=A.m.eva>0?A.m.eva+rar:A.m.eva;if(A.m.mag)it.st.mag=Math.round((2+lv*.8)*m);
     it.ic=A.ic[Math.min(4,ti)];it.name=A.names[ti];}
-  else{cls=cls||pick(Object.keys(D.ACCS));const A=D.ACCS[cls];it.cls=cls;it.slot='acc';
+  else{if(slot==='off')cls='shield';cls=cls||pick(Object.keys(D.ACCS));const A=D.ACCS[cls];it.cls=cls;it.slot=cls==='shield'?'off':'acc';
     const f={atk:(2+lv*.6)*m,crit:2+lv*.08+rar,def:(2+lv*.5)*m,hp:(10+lv*4)*m,mag:(2+lv*.7)*m,spd:1+lv*.04+rar*.3,eva:1+lv*.1+rar*.5};
+    if(cls==='shield'){f.def*=1.4;f.hp*=1.3;}
     for(const k of A.st)it.st[k]=k==='spd'||k==='crit'||k==='eva'?Math.round(f[k]*10)/10:Math.round(f[k]);
     it.ic=A.ic[Math.min(4,ti)];it.name=A.names[ti];}
   it.val=Math.round(D.priceRef(lv)*[.3,.5,.9,1.6,3][rar]);
   return it;}
-function genUnique(key){const U=D.UNIQUE[key];const it={id:nid('i'),lv:U.lv,rar:4,slot:U.slot==='acc'?'acc':U.slot,cls:U.cls,enh:0,st:Object.assign({},U.st),ic:U.ic,name:U.n,uniq:key,desc:U.d};
+function genUnique(key){const U=D.UNIQUE[key];const it={id:nid('i'),lv:U.lv,rar:4,slot:U.cls==='shield'?'off':U.slot==='acc'?'acc':U.slot,cls:U.cls,enh:0,st:Object.assign({},U.st),ic:U.ic,name:U.n,uniq:key,desc:U.d};
   it.val=Math.round(D.priceRef(U.lv)*3);return it;}
 function rollRarity(bonus){const r=Math.random()*100-(bonus||0);return r<1.2?4:r<6?3:r<20?2:r<48?1:0;}
-function canEquip(u,it){if(it.slot!=='wpn')return true;const allow=u===S.leader?D.LCLASS[u.cls].wpn:D.JOBS[u.job].wpn;return allow.includes(it.cls);}
+function canEquip(u,it){if(it.slot==='off'){const w=u.eq.wpn&&itemById(u.eq.wpn);return !(w&&H2.includes(w.cls));}return true;}
+function equipWhy(u,it){if(it.slot==='off'){const w=u.eq.wpn&&itemById(u.eq.wpn);if(w&&H2.includes(w.cls))return '두손 무기를 들고 있어 방패를 낄 수 없습니다';}return null;}
+function gearWarn(u,it){if(it.slot==='wpn'&&!wpnOk(u,it.cls))return '직업에 맞지 않는 무기 — 능력치 60%만 적용';if(it.slot==='off'&&!shieldOk(u))return '방패 숙련이 없는 직업 — 능력치 60%, 속도 -2';return null;}
 function ownerOf(itemId){if(Object.values(S.leader.eq).includes(itemId))return S.leader;return S.mercs.find(m=>Object.values(m.eq).includes(itemId));}
 function equip(u,itemId,slotHint){const it=itemById(itemId);if(!it||!canEquip(u,it))return false;
   const prev=ownerOf(itemId);if(prev)for(const s of SLOTS)if(prev.eq[s]===itemId)prev.eq[s]=null;
   let s=it.slot;if(s==='acc')s=slotHint||(!u.eq.acc1?'acc1':!u.eq.acc2?'acc2':'acc1');
-  u.eq[s]=itemId;return true;}
+  u.eq[s]=itemId;if(s==='wpn'&&H2.includes(it.cls))u.eq.off=null;return true;}
 function unequip(u,slot){u.eq[slot]=null;}
 function sellItem(id){const it=itemById(id);if(!it||ownerOf(id))return 0;const v=Math.round(it.val*.25*(1+.15*(it.enh||0)));S.inv.splice(S.inv.indexOf(it),1);addGold(v);return v;}
 function enhCost(it){let c=it.val*.3*((it.enh||0)+1);if(S.camp.built.forge&&S.loc==='camp')c*=.85;return Math.round(c/10)*10;}
@@ -226,12 +240,21 @@ function genDungeon(dk,seed){const d=D.DUNG[dk],F=d.floors,R=mulberry(seed);cons
       // 통로 입구는 비우기
       const nearCorr=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const X=x+a,Y=y+b;return cells[at(X,Y)]&&!(X>=r.x&&X<r.x+r.w&&Y>=r.y&&Y<r.y+r.h);});if(nearCorr)continue;
       props.push({x,y,k:rp(edge?['barrel','box','bones','skull','web','candle','rock','barrel']:['bones','skull','rubble','candle']),solid:edge});}}
+  // 새 장식 (깃발·선반·무기대·흉상·해골) — 방 종류에 맞게
+  const busy=(x,y)=>props.some(p=>p.x===x&&p.y===y)||torches.some(t=>t.x===x&&t.y===y);
+  for(const r of rooms){if(OUTDOOR[d.theme])break;
+    for(let x=r.x+2;x<r.x+r.w-1;x+=3)if(!cells[at(x,r.y-1)]&&!busy(x,r.y-1)&&R()<.55)props.push({x,y:r.y-1,k:rp(['banr','banb','banr2']),wall:1});
+    const extra=r.t==='shop'?['shelf1','shelf2','shelf3','sacks']:r.t==='chest'?['rack1','rack2','rack3','barrel2']:r.t==='boss'?['dskull','bust1','bust3','skull2']:r.t==='camp'?['sacks','barrel3','shelf1']:r.t==='elite'?['rack3','bust2','skull']:['bust1','barrel2','rack1','skull','bust2'];
+    const k=r.t==='battle'?(R()<.5?1:0):2;
+    for(let i=0;i<k;i++){const x=rr(r.x+1,r.x+r.w-2),y=r.y;if(busy(x,y)||Math.abs(x-r.cx)<=1)continue;
+      const nearCorr=[[0,-1],[1,0],[-1,0]].some(([a,b])=>{const X=x+a,Y=y+b;return cells[at(X,Y)]&&!(X>=r.x&&X<r.x+r.w&&Y>=r.y&&Y<r.y+r.h);});if(nearCorr)continue;
+      props.push({x,y,k:rp(extra),solid:true,big:1});}}
   const sr=room(start);
   return {dk,seed,w:W,h:H,cells,rooms,traps,props,torches,start:{x:sr.cx,y:sr.cy},theme:d.theme,outdoor:!!OUTDOOR[d.theme]};}
 function roomById(id){const r=S.run;return r&&r.dg?r.dg.rooms.find(x=>x.id===id):null;}
 
 /* ---------------- 적 생성 ---------------- */
-function monStats(def,lv,kind){const s=def.s,f=1+.012*lv;
+function monStats(def,lv,kind){const s=def.s,f=1.08+.012*lv;
   const st={hp:100*(1+.115*(lv-1))*s[0]*f,atk:23*(.76+.024*Math.min(lv,10))*(1+.2*(lv-1))*s[1]*f,mag:23*(.76+.024*Math.min(lv,10))*(1+.2*(lv-1))*s[2]*f,def:7*(1+.12*(lv-1))*s[3]*f,spd:(27+lv*.22)*s[4],crit:5,eva:4};
   if(kind==='elite'){st.hp*=1.8;st.atk*=1.18;st.mag*=1.18;st.def*=1.1;}
   for(const k of ['hp','atk','mag','def'])st[k]=Math.round(st[k]);return st;}
@@ -249,13 +272,19 @@ function examEnemies(ek){const e=D.EXAMS[ek];const out=[];if(e.boss)out.push(mak
 /* ---------------- 전투 엔진 ---------------- */
 // 순서: 행동 게이지가 찬 유닛이 하나씩 행동(연출 중에는 시간 정지) → 읽기 쉬운 하이브리드 오토배틀
 class Battle{
-  constructor(enemies,opt){opt=opt||{};this.opt=opt;this.t=0;this.units=[];this.ev=[];this.act=null;this.over=0;this.focus=null;
+  constructor(enemies,opt){opt=opt||{};this.opt=opt;this.t=0;this.units=[];this.ev=[];this.over=0;this.focus=null;
     this.auto=!!S.flags.leaderAuto;this.wait=null;this.speed=S.flags.bspeed||1;this.kills=[];this.log=[];
     const pu=partyUnits();let fi=0,bi=0;
     for(const u of pu){const isL=u===S.leader;const st=statsOf(u);const row=isL?D.LCLASS[u.cls].row:D.JOBS[u.job].row;
       const hp0=opt.full||u.hp==null?st.hp:Math.min(st.hp,u.hp);if(hp0<=0)continue;
       this.units.push({side:0,ref:u,isL,name:u.name,st,lv:u.lv,maxHp:st.hp,hp:hp0,row,slot:row==='front'?fi++:bi++,g:Math.random()*40,sp:isL?0:20,
-        sk:isL?null:D.JOBS[u.job].skill,cds:{},buffs:[],shield:0,look:u.look,job:isL?null:u.job,cls:isL?u.cls:null,atkType:isL?D.LCLASS[u.cls].atkType:D.JOBS[u.job].atkType,heal:!isL&&D.JOBS[u.job].heal,downedOnce:false});}
+        sk:isL?null:D.JOBS[u.job].skill,cds:{},buffs:[],shield:0,look:u.look,job:isL?null:u.job,cls:isL?u.cls:null,atkType:isL?D.LCLASS[u.cls].atkType:D.JOBS[u.job].atkType,heal:!isL&&D.JOBS[u.job].heal,downedOnce:false,key:isL?'L':u.id});}
+    // 진형: 전열 0~2, 후열 3~5 (저장된 자리 우선)
+    {const F=S.formation||{},used=new Set(),al=this.units.filter(x=>x.side===0);
+      for(const u of al){const c=F[u.key];if(c!=null&&c>=0&&c<6&&!used.has(c)){u.cell=c;used.add(c);}}
+      for(const u of al){if(u.cell!=null)continue;const pref=u.row==='front'?[1,0,2,4,3,5]:[4,3,5,1,0,2];const c=pref.find(k=>!used.has(k));u.cell=c;used.add(c);}
+      for(const u of al)u.row=u.cell<3?'front':'back';}
+    this.prep=!opt.sim&&!S.flags.quickStart;
     let ef=0,eb=0;
     for(const e of enemies){const row=e.role==='melee'?'front':'back';
       this.units.push({side:1,ref:e,name:e.name,st:e.st,maxHp:e.st.hp,hp:e.st.hp,row,slot:row==='front'?ef++:eb++,g:Math.random()*30,sp:e.boss?30:0,sk:e.sk,cds:{},buffs:[],shield:0,
@@ -271,20 +300,24 @@ class Battle{
       if(u.isL&&D.LCLASS[u.cls].passive==='bloodthirst')v*=1+.8*(1-u.hp/u.maxHp);}
     if(k==='def'){v*=1+this.buffVal(u,'def');v*=1-Math.min(.6,this.buffVal(u,'brk'));}
     return v;}
-  update(dt){if(this.over)return;dt*=this.speed;this.t+=dt;
-    if(this.wait)return;                       // 단장 명령 대기 (시간 정지)
-    if(this.act){this.act.t+=dt;this.stepAct();return;}
-    // 버프·상태 시간
+  // 실시간 전투: 모든 유닛이 자기 행동 게이지(속도)대로 동시에 움직인다
+  update(dt){if(this.over||this.prep)return;dt*=this.speed;this.t+=dt;
     for(const u of this.units){if(u.hp<=0)continue;u.buffs=u.buffs.filter(b=>(b.t-=dt)>0);
       for(const k in u.cds)u.cds[k]=Math.max(0,u.cds[k]-dt);
       const bl=u.buffs.find(b=>b.k==='bleed');if(bl){u.bleedAcc=(u.bleedAcc||0)+dt;if(u.bleedAcc>=1){u.bleedAcc=0;this.hurt(null,u,Math.max(1,Math.round(u.maxHp*bl.v)),{dot:true});}}}
-    // 게이지
-    let ready=null;for(const u of this.units){if(u.hp<=0)continue;if(this.has(u,'freeze'))continue;
-      let r=u.st.spd*1.25*(this.has(u,'slow')?.5:1)*(this.has(u,'haste')?2:1);u.g+=r*dt;if(u.g>=100&&(!ready||u.g>ready.g))ready=u;}
-    if(ready){ready.g=0;this.begin(ready);}
+    for(const u of this.units){if(u.hp<=0||this.over)continue;
+      if(u.act){u.act.t+=dt;this.stepAct(u.act);continue;}
+      if(this.has(u,'freeze'))continue;
+      const r=u.st.spd*1.25*(this.has(u,'slow')?.5:1)*(this.has(u,'haste')?2:1);u.g+=r*dt;
+      if(u.isL&&u.queued&&u.g>=35){u.g=100;}   // 스킬 예약 시 조금만 차도 바로 시전
+      if(u.g>=100){u.g=0;this.begin(u);}}
     this.checkEnd();}
-  begin(u){if(u.isL&&!this.auto&&!this.opt.sim){this.wait=u;this.ev.push({k:'await'});return;}
-    const cmd=u.isL?this.leaderAI(u):this.ai(u);this.start(u,cmd);}
+  begin(u){let cmd;
+    if(u.isL&&u.queued){const k=u.queued;u.queued=null;cmd=this.availSkills(u).includes(k)?{skill:k,target:this.focus&&this.focus.hp>0?this.focus:null}:null;}
+    if(!cmd)cmd=u.isL?(this.auto||this.opt.sim?this.leaderAI(u):{target:this.pickTarget(u)}):this.ai(u);
+    if(cmd.skill&&!cmd.target&&D.SKILLS[cmd.skill].t==='one')cmd.target=this.pickTarget(u,true);
+    if(!cmd.target&&!cmd.skill&&!cmd.heal)return;
+    this.start(u,cmd);}
   leaderAI(u){const es=this.alive(1);const sk=this.availSkills(u);
     for(const k of sk){const s=D.SKILLS[k];if(s.t==='all'&&es.length>=2)return {skill:k};if(s.t==='allies')return {skill:k};}
     for(const k of sk){const s=D.SKILLS[k];if(s.t==='one')return {skill:k,target:this.pickTarget(u,true)};}
@@ -302,26 +335,27 @@ class Battle{
     if(strong){const b=es.find(x=>x.boss);if(b)return b;}
     if(Math.random()<.4)return es.reduce((a,b)=>a.hp<b.hp?a:b);
     return pick(es);}
-  // 단장 수동 명령
-  command(cmd){const u=this.wait;if(!u)return false;if(cmd.skill){if(!this.availSkills(u).includes(cmd.skill))return false;}
-    if(!cmd.target&&!(cmd.skill&&D.SKILLS[cmd.skill].t!=='one'))cmd.target=this.pickTarget(u,true);
-    this.wait=null;this.start(u,cmd);return true;}
+  leader(){return this.units.find(x=>x.isL&&x.hp>0);}
+  // 단장 스킬 버튼: 쓸 수 있으면 다음 행동에 바로 시전 (예약)
+  cast(k){const u=this.leader();if(!u||!this.availSkills(u).includes(k))return false;u.queued=k;if(!u.act)u.g=Math.max(u.g,99.9);return true;}
+  moveCell(u,c){if(!this.prep||u.side!==0)return;const o=this.units.find(x=>x.side===0&&x.cell===c);if(o)o.cell=u.cell;u.cell=c;for(const x of this.units)if(x.side===0)x.row=x.cell<3?'front':'back';}
+  begin_(){this.prep=false;S.formation=S.formation||{};for(const u of this.units)if(u.side===0)S.formation[u.key]=u.cell;save();}
   setFocus(e){if(e&&e.side===1&&e.hp>0){this.focus=e;this.ev.push({k:'focus',u:e});}}
   start(u,cmd){const sk=cmd.skill?D.SKILLS[cmd.skill]:null;
     const melee=!sk?(u.atkType==='slash'):(sk.t==='one'||sk.t==='front2')&&u.atkType==='slash';
     const tg=cmd.target||(cmd.heal)||null;
-    this.act={u,cmd,sk,t:0,melee:melee&&tg&&tg!==u,tg,hit:false,dur:melee?.95:.8};
+    u.act={u,cmd,sk,t:0,melee:melee&&tg&&tg!==u,tg,hit:false,dur:melee?.95:.8,oy:(Math.random()-.5)*36};
     if(sk){this.ev.push({k:'skill',u,name:sk.n});if(u.isL)u.cds[cmd.skill]=sk.cd*(1-(u.st.cdr||0));else u.sp=0;}
     u.anim='attack';u.at=0;}
-  stepAct(){const a=this.act,u=a.u;
+  stepAct(a){const u=a.u;
     if(a.melee&&a.tg){const p=Math.min(1,a.t/.28),back=Math.max(0,(a.t-.7)/.25);
-      const o=this.offFn?this.offFn(u):{x:(u.side===0?-62:62),y:0};const tx=a.tg.x+o.x,ty=a.tg.y+o.y;
+      const o=this.offFn?this.offFn(u):{x:(u.side===0?-62:62),y:0};const tx=a.tg.x+o.x,ty=a.tg.y+o.y+a.oy;
       if(a.t<.28){u.x=u.hx+(tx-u.hx)*p;u.y=u.hy+(ty-u.hy)*p;u.anim='walk';}
-      else if(a.t<.7){u.x=tx;u.y=ty;if(u.anim!=='attack'){u.anim='attack';u.at=0;}}
+      else if(a.t<.7){u.x=tx;u.y=ty;if(u.anim!=='attack'&&u.anim!=='hurt'){u.anim='attack';u.at=0;}}
       else{u.x=tx+(u.hx-tx)*Math.min(1,back);u.y=ty+(u.hy-ty)*Math.min(1,back);u.anim='walk';}
       if(!a.hit&&a.t>=.48){a.hit=true;this.resolve(a);}}
     else{if(!a.hit&&a.t>=.38){a.hit=true;this.resolve(a);}}
-    if(a.t>=a.dur){u.x=u.hx;u.y=u.hy;u.anim=null;this.act=null;this.checkEnd();}}
+    if(a.t>=a.dur){u.x=u.hx;u.y=u.hy;if(u.anim==='walk')u.anim=null;u.act=null;}}
   resolve(a){const u=a.u,sk=a.sk,cmd=a.cmd;const es=this.alive(1-u.side),fr=this.alive(u.side);
     if(cmd.heal){const amt=Math.round(this.eff(u,'mag')*1.0);this.healU(u,cmd.heal,amt);u.sp=Math.min(100,u.sp+22);return;}
     if(!sk){if(!a.tg||a.tg.hp<=0)a.tg=this.pickTarget(u);if(a.tg){this.ev.push({k:'shot',u,tg:a.tg,type:u.atkType});this.strike(u,a.tg,1,u.atkType==='magic'?'mag':'atk',{});}
@@ -360,10 +394,10 @@ class Battle{
     if(tg.shield>0){const a=Math.min(tg.shield,dmg);tg.shield-=a;dmg-=a;if(a)this.ev.push({k:'shield',u:tg,v:a});}
     tg.hp=Math.max(0,tg.hp-dmg);this.ev.push({k:'dmg',u:tg,v:dmg,crit:o.crit,dot:o.dot,exec:o.exec,type:o.type});tg.hitT=.25;tg.anim='hurt';tg.at=0;
     if(!tg.isL&&tg.sk)tg.sp=Math.min(100,(tg.sp||0)+8);
-    if(tg.hp<=0){tg.anim='death';tg.at=0;tg.buffs=[];this.ev.push({k:'down',u:tg});if(tg.side===1)this.kills.push(tg.ref);if(this.focus===tg)this.focus=null;}}
+    if(tg.hp<=0){tg.act=null;tg.anim='death';tg.at=0;tg.buffs=[];this.ev.push({k:'down',u:tg});if(tg.side===1)this.kills.push(tg.ref);if(this.focus===tg)this.focus=null;}}
   healU(u,tg,amt,quiet){if(tg.hp<=0)return;const h=Math.min(tg.maxHp-tg.hp,amt);tg.hp+=h;if(!quiet||h>5)this.ev.push({k:'heal',u:tg,v:h});}
   checkEnd(){if(this.over)return;if(!this.alive(1).length)this.over=1;else if(!this.alive(0).length)this.over=2;
-    if(this.over){this.wait=null;this.ev.push({k:'end',win:this.over===1});}}
+    if(this.over){for(const u of this.units)if(u.act&&u.hp>0){u.act=null;u.x=u.hx;u.y=u.hy;}this.ev.push({k:'end',win:this.over===1});}}
 }
 // 균형 확인용 자동 전투 (UI 없이)
 function simulate(enemies,opt){const b=new Battle(enemies,Object.assign({sim:true},opt||{}));b.auto=true;let n=0;while(!b.over&&n<20000){b.update(.05);n++;}return b;}
@@ -387,12 +421,12 @@ function afterBattle(b,node){const r=S.run;const win=b.over===1;
   const out={win,gold:0,exp:0,tro:[],items:[],fame:0,lvups:[]};
   // 처치 보상 (전멸이어도 쓰러뜨린 적 몫은 계산)
   const d=r.dk?D.DUNG[r.dk]:null,inc=d?D.TIER[d.tier].inc*d.dm:0;
-  let xp=0;for(const e of b.kills){xp+=1.6*Math.pow(e.lv,1.5)+3;
+  let xp=0;for(const e of b.kills){xp+=(1.6*Math.pow(e.lv,1.5)+3)*.7;
     r.kills[e.key]=(r.kills[e.key]||0)+1;
     if(e.tro&&Math.random()<.6){const t=e.tro;r.loot.tro[t]=(r.loot.tro[t]||0)+1;out.tro.push(t);}}
   if(win){const kind=node?node.t:'special';
-    if(d){out.gold=Math.round(inc*(kind==='boss'?.25:kind==='elite'?.16:.09)*rnd(.85,1.15));
-      out.fame=Math.round((kind==='boss'?18:kind==='elite'?7:3)*D.TIER[d.tier].fameMul);
+    if(d){out.gold=Math.round(inc*(kind==='boss'?.25:kind==='elite'?.16:.075)*rnd(.85,1.15));
+      out.fame=Math.round((kind==='boss'?18:kind==='elite'?6:1.9)*D.TIER[d.tier].fameMul);
       const dropP=kind==='boss'?1:kind==='elite'?.4:.12;
       if(Math.random()<dropP){const lv=b.units.find(u=>u.side===1).lv||d.lv[1];const it=genItem(lv,rollRarity(kind==='boss'?18:kind==='elite'?8:0),pick(['wpn','arm','acc']));r.loot.items.push(it);out.items.push(it);}
       if(kind==='boss'){r.bossDown=true;const it2=Math.random()<.5?genItem(d.lv[1]+1,rollRarity(10),pick(['wpn','arm','acc'])):null;if(it2){r.loot.items.push(it2);out.items.push(it2);}}
@@ -530,7 +564,7 @@ function townLine(tk,role){const T=D.TOWN_TALK[tk];if(!T)return '...';const a=at
 /* ---------------- 단장 전직 ---------------- */
 function advance(cls){const c=D.LCLASS[cls];if(!c||c.base!==S.leader.cls)return false;S.leader.cls=cls;S.advanced=true;return true;}
 
-return {get S(){return S;},set S(v){S=v;},slot:1,D,rnd,ri,pick,clamp,fmt,rankIdx,newGame,save,load,peek,wipeSlot,SLOTS,itemById,statsOf,leaderStats,mercStats,power,expNeed,gainExp,
+return {get S(){return S;},set S(v){S=v;},slot:1,D,rnd,ri,pick,clamp,fmt,rankIdx,newGame,save,load,peek,wipeSlot,SLOTS,H2,wpnOk,shieldOk,equipWhy,gearWarn,itemById,statsOf,leaderStats,mercStats,power,expNeed,gainExp,
   wage,upkeep,hireCost,healCost,attitude,priceMul,addGold,addFame,maxRoster,curTier,townOpen,decorPts,campTax,genMerc,recruitList,hire,fire,mercById,canFight,partyUnits,
   genItem,genUnique,rollRarity,canEquip,ownerOf,equip,unequip,sellItem,enhCost,enhance,addItem,invFull,dungOpen,genDungeon,roomById,visitRoom,trapDetect,trapHit,trapDisarm,genEnemies,examEnemies,makeEnemy,Battle,simulate,
   startRun,startSpecial,afterBattle,nodeEvent,campRest,useConsumable,endRun,restDay,treat,curMain,genDailies,acceptSub,claimSub,subCheck,checkMain,examReady,passExam,talkMain,
