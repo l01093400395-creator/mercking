@@ -234,14 +234,21 @@ function stoneRing(m,x,y,w,h,gx){m.wset=m.wset||new Set();const put=(X,Y,gate)=>
   const G=[].concat(gx);for(let i=x;i<x+w;i++){if(G.includes(i)){m.g[gi(m,i,y)]=1;m.g[gi(m,i,y+h-1)]=1;continue;}put(i,y);put(i,y+h-1);}for(let j=y+1;j<y+h-1;j++){put(x,j);put(x+w-1,j);}}
 // ── 지형: 언덕(평지 위 고지대) · 강 · 다리 ──
 // 언덕: 테두리(12)·절벽면(9)은 못 지나감, 계단(10)으로만 오르내림. 위쪽 면(8)은 걸을 수 있음
-function hill(m,x,y,w,h,stairs){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++){const edge=i===x||i===x+w-1||j===y;m.g[gi(m,i,j)]=edge?12:8;}
+function hill(m,x,y,w,h,stairs,style){style=style||'wood';const sw=style==='stone'?3:2;for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++){const edge=i===x||i===x+w-1||j===y;m.g[gi(m,i,j)]=edge?12:8;}
   for(let i=x;i<x+w;i++){m.g[gi(m,i,y+h)]=9;m.g[gi(m,i,y+h+1)]=9;}
-  for(const sx of stairs||[]){m.g[gi(m,sx,y+h-1)]=8;m.g[gi(m,sx,y+h)]=10;m.g[gi(m,sx,y+h+1)]=10;}
+  m.stairs=m.stairs||[];for(const sx of stairs||[]){for(let k=0;k<sw;k++){m.g[gi(m,sx+k,y+h-1)]=8;m.g[gi(m,sx+k,y+h)]=10;m.g[gi(m,sx+k,y+h+1)]=10;}m.stairs.push({x:sx,y:y+h,w:sw,style});}
   m.hills=(m.hills||[]).concat([{x,y,w,h}]);}
-// 강 (세로 or 가로 띠) + 다리
-function riverV(m,x,w,y0,y1){for(let j=y0;j<y1;j++){const wob=Math.round(Math.sin(j*.35)*1);for(let i=0;i<w;i++)m.g[gi(m,x+i+wob,j)]=2;}}
-function riverH(m,y,h,x0,x1){for(let i=x0;i<x1;i++){const wob=Math.round(Math.sin(i*.3)*1);for(let j=0;j<h;j++)m.g[gi(m,i,y+j+wob)]=2;}}
-function bridge(m,x,y,len,dir){for(let k=0;k<len;k++){for(let q=0;q<2;q++){const X=dir==='h'?x+k:x+q,Y=dir==='h'?y+q:y+k;m.g[gi(m,X,Y)]=dir==='h'?11:13;}}}
+function riverV(m,x,w,y0,y1,straight){for(let j=y0;j<y1;j++){const wob=straight?0:Math.round(Math.sin(j*.35)*1);for(let i=0;i<w;i++)m.g[gi(m,x+i+wob,j)]=2;}}
+function riverH(m,y,h,x0,x1,bend){for(let i=x0;i<x1;i++){const wob=bend==null?Math.round(Math.sin(i*.16)*1):(i>=bend?1:0);for(let j=0;j<h;j++)m.g[gi(m,i,y+j+wob)]=2;}}
+// 다리: 물이 있는 구간만 다리 바닥(11), 양쪽 1칸은 길로 이어줌. 다리 근처 강은 곧게 정리.
+function bridge(m,x,y,len,dir,style){style=style||'wood';const H=dir==='h';const W=v=>v===2||v===7;
+  const at=(k,q)=>H?[k,y+q]:[x+q,k];const s0=(H?x:y)-3,s1=(H?x:y)+len+3;let a=1e9,b=-1;
+  for(let k=s0;k<=s1;k++)for(let q=0;q<2;q++){const [X,Y]=at(k,q);if(X<0||Y<0||X>=m.w||Y>=m.h)continue;if(W(m.g[gi(m,X,Y)])){a=Math.min(a,k);b=Math.max(b,k);}}
+  if(b<0)return;if(style==='arch'){const c=(a+b)>>1;a=c-3;b=c+3;}
+  for(let q=-2;q<4;q++)for(let k=a-2;k<=b+2;k++){const [X,Y]=at(k,q);if(X<0||Y<0||X>=m.w||Y>=m.h)continue;const id=gi(m,X,Y);
+    if(k>=a&&k<=b)m.g[id]=(q===0||q===1)?11:2;else if(W(m.g[id]))m.g[id]=0;}
+  const ext=style==='arch'?2:1;for(let q=0;q<2;q++)for(const k of [a-1,b+1,a-ext,b+ext]){const [X,Y]=at(k,q);const id=gi(m,X,Y);if(m.g[id]!==4)m.g[id]=1;m.blk[id]=0;}
+  (m.bridges=m.bridges||[]).push({dir,a:a-ext,b:b+ext,lane:H?y:x,style});}
 // 울타리 상자(문 1칸 비움). gate: 't' 위 / 'b' 아래, 문 칸은 길로 깔아 출입구와 이어짐
 function fenceBox(m,x,y,w,h,gate,gx){gx=gx??x+Math.floor(w/2);const gy=gate==='t'?y:y+h-1;
   for(const yy of [y,y+h-1]){if(yy===gy){fence(m,x,yy,gx-x,'h');fence(m,gx+1,yy,x+w-gx-1,'h');}else fence(m,x,yy,w,'h');}
@@ -411,12 +418,12 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     m.objs.push({t:'cliff',x:0,y:0,w:48,base:4*T});block(m,0,0,48,5);
     road(m,0,15,48,1);road(m,0,27,48,1);road(m,12,16,1,11);road(m,38,13,1,2);road(m,14,6,1,9);road(m,3,6,22,1);
     // 광산 단지 언덕 (계단으로만 오르내림)
-    hill(m,30,5,16,6,[38]);
+    hill(m,30,5,16,6,[38]);road(m,39,13,1,2);
     m.objs.push({t:'mine',x:36,y:4,base:7*T});block(m,35,6,5,1);
     for(let y=8;y<11;y++)m.objs.push({t:'rail',x:42,y,base:(y+1)*T-14});m.objs.push({t:'cart',x:42,y:9,base:10*T});block(m,42,8,1,3);
     for(const [x,y] of [[31,7],[32,9],[44,7]])prop(m,'rock',x,y);prop(m,'crate',40,9);prop(m,'barrels',33,8);prop(m,'lamp',37,9);prop(m,'lamp',39,9);
     // 강 + 다리
-    riverH(m,21,2,0,48);bridge(m,11,20,4,'v');bridge(m,35,20,4,'v');
+    road(m,11,16,2,11);road(m,35,16,2,11);riverH(m,21,2,0,48,24);bridge(m,11,20,4,'v');bridge(m,35,20,4,'v');
     // 대장장이 거리 (용광로·모루·물통 작업장)
     const sm=H({x:2,w:4,h:1,door:14,roof:2,act:'smith',name:'대장간',sign:D.I(7,13)});sm.smoke=true;
     for(const [x,y] of [[2,7],[7,7],[2,9],[7,9]]){m.objs.push({t:'furnace',x,y,base:(y+2)*T});block(m,x,y+1,2,1);prop(m,'anvil',x+2,y+1);}
@@ -425,15 +432,15 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     H({x:15,w:4,h:2,door:14,roof:0,act:'guild',name:'광산 길드',sign:D.I(18,9)});H({x:20,w:4,h:1,door:14,roof:1,act:'shop',name:'광부 잡화점',sign:D.I(7,3)});
     H({x:25,w:4,h:2,door:14,roof:4,act:'inn',name:'광부 여관',sign:D.I(8,10)});H({x:30,w:4,h:1,door:18,roof:3,name:'광석 감정소'});H({x:43,w:4,h:1,door:18,roof:1,name:'창고'});
     // 큰길 남쪽 · 강 남쪽 주택
-    for(const [x,r] of [[1,3],[5,1],[16,2],[20,0],[24,3],[38,2]])H({x,w:4,h:1,door:19,roof:r,name:'광부 숙소'});
+    for(const [x,r] of [[1,3],[5,1],[16,2],[20,0],[24,3],[38,2]])H({x,w:4,h:1,door:19,roof:r,name:'광부 숙소',path:0});
     for(const [x,r] of [[1,0],[5,2],[15,1],[19,4],[23,2],[27,0],[39,3],[43,1]])H({x,w:4,h:1,door:26,roof:r,name:'민가'});
     road(m,0,20,48,0);for(const x of [3,7,18,22,26,30,41,45])road(m,x,16,1,1),road(m,x,17,1,0);
-    stall(m,31,13,'#3a7ad0');stall(m,33,13,'#d08a2a');bench(m,8,17);prop(m,'lamp',3,16);prop(m,'lamp',44,16);prop(m,'lamp',33,28);
+    stall(m,31,13,'#3a7ad0');stall(m,33,13,'#d08a2a');prop(m,'lamp',3,16);prop(m,'lamp',44,16);prop(m,'lamp',33,28);
     treeBorder(m,[[0,15,1],[47,15,1]]);m.spawn={x:1,y:15};m.exits=[{x:0,y:15,to:'world',n:'월드맵'},{x:47,y:15,to:'world',n:'월드맵'}];}
   else if(tk==='t3'){m=mkMap(tk,46,30);m.pathMat='slab';
     fillG(m,0,23,46,2,3);fillG(m,0,25,46,5,2);fillG(m,0,28,46,2,7);
     road(m,0,11,46,1);road(m,0,19,46,1);road(m,12,12,1,7);road(m,33,12,1,7);road(m,22,20,1,3);
-    fillG(m,20,22,5,6,6);fillG(m,8,24,2,4,6);fillG(m,36,24,2,4,6);fillG(m,17,14,11,4,4);
+    fillG(m,20,22,5,6,6);fillG(m,4,24,2,4,6);fillG(m,36,24,2,4,6);fillG(m,17,14,11,4,4);
     H({x:3,w:6,h:2,door:10,roof:0,act:'guild',name:'항구 의뢰소',sign:D.I(18,9),boxes:1});
     H({x:11,w:4,h:1,door:10,roof:1,act:'shop',name:'무역 상점',sign:D.I(7,3),awning:'#2a8ab8',boxes:1});
     H({x:17,w:6,h:2,door:10,roof:4,act:'inn',name:'바다 여관',sign:D.I(8,10),chimney:1,boxes:1});
@@ -445,22 +452,22 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     stall(m,15,13,'#2a8ab8');stall(m,29,13,'#d04a3a');bench(m,19,17);bench(m,24,17);bed(m,30,16,2,5);
     road(m,13,5,30,1);road(m,12,5,1,6);road(m,33,6,1,5);road(m,23,6,1,5);
     // 바다가 보이는 언덕 (계단으로만) + 개울과 다리
-    hill(m,1,1,11,4,[10]);road(m,10,7,1,4);H({x:3,w:4,h:1,door:4,roof:2,name:'등대지기 집'});prop(m,'statue',8,3);m.objs.push({t:'flowers',x:2,y:4,base:5*T-8,seed:9});m.objs.push({t:'flowers',x:7,y:4,base:5*T-8,seed:4});
-    riverV(m,8,2,13,23);bridge(m,7,19,4,'h');
+    hill(m,1,1,11,4,[9]);road(m,9,7,2,4);H({x:3,w:4,h:1,door:4,roof:2,name:'등대지기 집',path:0});prop(m,'statue',8,3);m.objs.push({t:'flowers',x:2,y:4,base:5*T-8,seed:9});m.objs.push({t:'flowers',x:7,y:4,base:5*T-8,seed:4});
+    riverV(m,8,2,12,25,true);bridge(m,6,18,6,'h');
     H({x:15,w:4,h:1,door:4,roof:3,name:'민가'});H({x:19,w:4,h:1,door:4,roof:1,name:'그물 공방'});
     H({x:26,w:4,h:1,door:4,roof:4,name:'민가'});H({x:29,w:4,h:1,door:4,roof:2,name:'민가'});H({x:36,w:4,h:1,door:4,roof:0,name:'선장 댁'});H({x:40,w:4,h:1,door:4,roof:3,name:'민가'});
     bench(m,38,8);bed(m,26,7,3,3);bed(m,5,7,3,6);prop(m,'barrels',17,7);
     m.boats=[{x:15*T,y:26.2*T,ph:0},{x:30*T,y:27*T,ph:1.6},{x:42*T,y:26.5*T,ph:3}];
     treeBorder(m,[[0,11,1],[45,11,1],[0,19,1],[45,19,1]]);m.spawn={x:1,y:11};m.exits=[{x:0,y:11,to:'world',n:'월드맵'},{x:0,y:19,to:'world',n:'월드맵'}];}
-  else{m=mkMap(tk,64,44);m.pathMat='marble';
+  else{m=mkMap(tk,68,44);m.pathMat='marble';
     // 강 + 다리 (서쪽 시가지 / 동쪽 병영)
-    road(m,0,18,64,2);road(m,0,27,43,1);road(m,2,35,42,1);road(m,1,12,18,1);road(m,1,7,17,1);road(m,16,8,1,4);road(m,42,3,1,15);road(m,27,25,2,19);
-    riverV(m,44,3,0,44);bridge(m,42,18,7,'h');bridge(m,42,32,7,'h');road(m,47,32,1,3);road(m,40,32,3,2);road(m,40,28,1,4);
+    road(m,0,18,68,2);road(m,0,27,43,1);road(m,2,35,42,1);road(m,1,12,18,1);road(m,1,7,17,1);road(m,16,8,1,4);road(m,42,3,1,15);road(m,27,25,2,19);
+    riverV(m,44,7,0,44,true);bridge(m,42,18,9,'h','arch');bridge(m,42,32,9,'h','arch');road(m,51,32,1,3);road(m,40,32,3,2);road(m,40,28,1,4);
     // 황궁 언덕 (계단으로만)
-    hill(m,18,2,20,9,[27,28]);fillG(m,19,13,19,5,4);fillG(m,19,20,19,5,4);
+    hill(m,18,2,20,9,[27],'stone');fillG(m,19,13,19,5,4);fillG(m,19,20,19,5,4);
     H({x:24,w:8,h:3,door:9,roof:4,name:'황궁',big:true,spr:'mansion',path:0});
     for(const x of [20,35])prop(m,'statue',x,5);for(const x of [21,34])prop(m,'lamp',x,8);m.objs.push({t:'flowers',x:23,y:8,base:9*T-8,seed:3});m.objs.push({t:'flowers',x:32,y:8,base:9*T-8,seed:5});
-    m.soldiers=[[26,13,'warrior_blue',1],[29,13,'warrior_blue',-1],[42,17,'warrior_yellow',1],[48,17,'warrior_yellow',-1],[42,28,'warrior_yellow',1]];
+    m.soldiers=[[26,13,'warrior_blue',1],[29,13,'warrior_blue',-1],[43,17,'warrior_yellow',1],[53,17,'warrior_yellow',-1],[41,28,'warrior_yellow',1]];
     // 광장
     prop(m,'fountain',27,21);prop(m,'statue',21,15);prop(m,'statue',35,15);for(const x of [20,36])prop(m,'lamp',x,22);
     stall(m,22,22,'#8a3ab8');stall(m,32,22,'#d04a3a');bench(m,23,15);bench(m,30,15);bed(m,19,24,3,1);bed(m,35,24,3,4);
@@ -472,19 +479,19 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     H({x:38,w:4,h:1,door:6,roof:3,name:'귀족 저택'});H({x:38,w:4,h:1,door:11,roof:1,name:'귀족 저택'});
     for(const [x,r] of [[1,3],[5,0],[9,2],[13,4],[17,1],[21,3],[31,0],[35,2],[39,4]])H({x,w:4,h:1,door:26,roof:r,name:'민가'});
     H({x:2,w:4,h:2,door:34,roof:0,act:'hq',name:'메인 길드 본부',sign:D.I(2,10)});H({x:8,w:4,h:1,door:34,roof:4,act:'relic',name:'유물 상점',sign:D.I(10,6)});
-    H({x:14,w:4,h:2,door:34,roof:3,act:'classhall',name:'전직의 전당',sign:D.I(91,9)});for(const [x,r] of [[19,1],[30,2],[34,0],[38,3]])H({x,w:4,h:1,door:34,roof:r,name:'민가'});
+    H({x:14,w:4,h:2,door:34,roof:3,act:'classhall',name:'전직의 전당',sign:D.I(91,9)});for(const [x,r] of [[19,1],[30,2],[34,0]])H({x,w:4,h:1,door:34,roof:r,name:'민가'});
     // 투기장
     fillG(m,6,38,20,3,3);stoneRing(m,5,37,22,5,[15,16]);road(m,15,36,2,1);
     for(const [x,y] of [[7,39],[24,39]])prop(m,'barrel',x,y);m.objs.push({t:'statue2',x:10,y:38,base:40*T,act:'arena',name:'왕실 투기장'});block(m,10,38,2,2);m.objs.push({t:'statue2',x:20,y:38,base:40*T,act:'arena',name:'왕실 투기장'});block(m,20,38,2,2);
     m.labels.push({x:16,y:38.4,n:'왕실 투기장',act:'arena'});
     // 동쪽: 근위대 병영 + 훈련장
-    H({x:48,w:4,h:2,door:17,roof:3,name:'근위대 병영'});H({x:53,w:4,h:2,door:17,roof:0,name:'근위대 병영'});H({x:58,w:4,h:1,door:17,roof:4,name:'무기고'});
-    fenceBox(m,48,21,15,8,'t',55);fillG(m,49,22,13,6,3);road(m,55,20,1,1);
-    for(let r=0;r<3;r++)for(let c=0;c<3;c++)m.soldiers.push([50+c*2,23+r*2,'warrior_blue',1,true]);
-    m.soldiers.push([57,25,'warrior_yellow',-1]);for(const y of [23,25,27])m.soldiers.push([58,y,'archer_blue',1,true]);for(const y of [23,25,27]){m.objs.push({t:'dummy',x:61,y,base:(y+1)*T});block(m,61,y,1,1);}
-    m.labels.push({x:55,y:21.4,n:'근위대 훈련장'});
-    for(const [x,r] of [[48,2],[53,0],[58,1]])H({x,w:4,h:1,door:34,roof:r,name:'민가'});road(m,47,35,16,1);road(m,47,28,1,7);
-    treeBorder(m,[[0,18,1],[63,18,1],[27,43,2]]);m.spawn={x:1,y:18};m.exits=[{x:0,y:18,to:'world',n:'월드맵'},{x:63,y:18,to:'world',n:'월드맵'},{x:27,y:43,to:'world',n:'월드맵'}];}
+    H({x:52,w:4,h:2,door:17,roof:3,name:'근위대 병영'});H({x:57,w:4,h:2,door:17,roof:0,name:'근위대 병영'});H({x:62,w:4,h:1,door:17,roof:4,name:'무기고'});
+    fenceBox(m,52,21,15,8,'t',59);fillG(m,53,22,13,6,3);road(m,59,20,1,1);
+    for(let r=0;r<3;r++)for(let c=0;c<3;c++)m.soldiers.push([54+c*2,23+r*2,'warrior_blue',1,true]);
+    m.soldiers.push([61,25,'warrior_yellow',-1]);for(const y of [23,25,27])m.soldiers.push([62,y,'archer_blue',1,true]);for(const y of [23,25,27]){m.objs.push({t:'dummy',x:65,y,base:(y+1)*T});block(m,65,y,1,1);}
+    m.labels.push({x:59,y:21.4,n:'근위대 훈련장'});
+    for(const [x,r] of [[53,2],[58,0],[63,1]])H({x,w:4,h:1,door:34,roof:r,name:'민가'});road(m,51,35,16,1);road(m,51,28,1,7);
+    treeBorder(m,[[0,18,1],[67,18,1],[27,43,2]]);m.spawn={x:1,y:18};m.exits=[{x:0,y:18,to:'world',n:'월드맵'},{x:67,y:18,to:'world',n:'월드맵'},{x:27,y:43,to:'world',n:'월드맵'}];}
   organicRoads(m,{t1:.7,t2:.9,t3:1.2,t4:1.4}[tk]);dress(m,{t1:.9,t2:.7,t3:.6,t4:.5}[tk]);
   m.title=t.n+' · '+t.tag;m.town=tk;return m;}
 // 마을 꾸미기: 집마다 작은 마당 + 빈 풀밭에 나무 무리·덤불·바위·꽃
@@ -511,6 +518,17 @@ function dress(m,dens){let sd=m.w*131+m.h*7;const R=()=>{sd=(sd*1103515245+12345
 
 /* ----- 바닥 그리기 (한 번 그려 두고 재사용) ----- */
 const PAL={grass:'#63c74d',grassD:'#55b343',dirt:'#e4a672',dirtD:'#c28569',sand:'#e4d572',water:'#32b8e8',deep:'#0099db',soil:'#9d573f',plank:'#b86f50',plankD:'#8a4f36'};
+// 다리·계단 스프라이트 (마을 추가요소 다리 팩)
+function drawCrossings(m,x){const bi=IMG.t_bridges;if(!bi)return;
+  for(const b of m.bridges||[]){
+    if(b.style==='arch'){const X=b.a*T+8,Y=b.lane*T-8;x.drawImage(bi,480,112,16,78,X,Y,16,78);x.drawImage(bi,640,112,15,78,X+147,Y,15,78);x.drawImage(bi,498,112,139,78,X+12,Y,139,78);continue;}
+    if(b.dir==='h'){const X0=b.a*T,X1=(b.b+1)*T,Y=b.lane*T-1;x.fillStyle='rgba(0,40,70,.25)';x.fillRect(X0+8,Y+34,X1-X0-16,4);
+      x.drawImage(bi,272,356,16,36,X0,Y,16,36);for(let px=X0+16;px<X1-16;px+=32){const w=Math.min(32,X1-16-px);x.drawImage(bi,294,356,w,36,px,Y,w,36);}x.drawImage(bi,400,356,16,36,X1-16,Y,16,36);}
+    else{const X=b.lane*T+2,Y0=b.a*T,Y1=(b.b+1)*T;x.fillStyle='rgba(0,40,70,.25)';x.fillRect(X+28,Y0+10,4,Y1-Y0-16);
+      x.drawImage(bi,225,324,29,12,X,Y0,29,12);for(let py=Y0+12;py<Y1-12;py+=32){const h=Math.min(32,Y1-12-py);x.drawImage(bi,225,341,29,h,X,py,29,h);}x.drawImage(bi,225,450,29,12,X,Y1-12,29,12);}}
+  for(const s of m.stairs||[]){const top=s.y*T;
+    if(s.style==='stone'){const X=s.x*T+(s.w*T-43)/2;x.fillStyle='rgba(0,0,0,.22)';x.fillRect(X+2,top+30,41,5);for(let k=0;k<3;k++)x.drawImage(bi,426,3,43,13,X,top-6+k*13,43,13);}
+    else{const X=s.x*T+(s.w*T-29)/2;x.fillStyle='rgba(0,0,0,.22)';x.fillRect(X+2,top+30,27,4);x.drawImage(bi,225,324,29,12,X,top-8,29,12);x.drawImage(bi,225,341,29,24,X,top+4,29,24);x.drawImage(bi,225,450,29,8,X,top+28,29,8);}}}
 function paintGround(m){const c=document.createElement('canvas');c.width=m.w*T;c.height=m.h*T;const x=c.getContext('2d');x.imageSmoothingEnabled=false;const ts=IMG.t_ss16;
   const tile=(tx,ty,dx,dy)=>x.drawImage(ts,tx*16,ty*16,16,16,dx,dy,16,16);
   const GR=[[2,1],[2,1],[2,1],[2,1],[2,1],[2,1],[2,1],[2,1],[2,2],[3,2],[5,2],[3,3]];
@@ -533,10 +551,8 @@ function paintGround(m){const c=document.createElement('canvas');c.width=m.w*T;c
     else if(g===9||g===10){const up=m.g[gi(m,i,j-1)];const top=up===8||up===12||(up===10&&g===9);x.drawImage(ts,176+((i%2)*0),64+((j%2)*16),16,16,dx,dy,16,16);
       x.fillStyle='rgba(60,30,20,.25)';x.fillRect(dx,dy+T-2,T,2);
       if(top){x.fillStyle='#3e8a3a';x.fillRect(dx,dy,T,3);x.fillStyle='#8a3a28';x.fillRect(dx,dy+3,T,1);for(let k=0;k<4;k++){x.fillStyle='#3e8a3a';x.fillRect(dx+((h>>k)%14),dy+3,2,2);}}
-      if(g===10){x.drawImage(ts,144,176,16,16,dx,dy,16,16);}}
-    else if(g===11||g===13){x.fillStyle='#3fbbe6';x.fillRect(dx,dy,T,T);const bi=IMG.t_bridges;
-      if(bi&&g===11){const top=m.g[gi(m,i,j-1)]!==11;x.drawImage(bi,310+(i%4)*16,top?356:372,16,16,dx,dy,16,16);}
-      else if(bi){const left=m.g[gi(m,i-1,j)]!==13;x.drawImage(bi,left?222:238,350+(j%5)*16,16,16,dx,dy,16,16);}}
+      }
+    else if(g===11||g===13){x.fillStyle='#3fbbe6';x.fillRect(dx,dy,T,T);x.fillStyle='#36aedb';if((i+j)%2===0)x.fillRect(dx,dy+8,T,8);}
     else if(g===6){const bi=IMG.t_bridges;if(bi){x.drawImage(bi,230,350+(j%5)*16,16,16,dx,dy,16,16);}else{x.fillStyle=PAL.plank;x.fillRect(dx,dy,T,T);}}}
   // 가장자리 (길·물 테두리)
   for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++){const g=m.g[gi(m,i,j)],dx=i*T,dy=j*T;const nb=(a,b)=>(a<0||b<0||a>=m.w||b>=m.h)?g:m.g[gi(m,a,b)];
@@ -562,6 +578,7 @@ function paintGround(m){const c=document.createElement('canvas');c.width=m.w*T;c
       if(!wt(nb(i+1,j))){x.fillStyle='#b8e8f8';x.fillRect(dx+T-1,dy,1,T);}
       if(!wt(nb(i,j+1))&&j<m.h-1){x.fillStyle='#e8f8ff';x.fillRect(dx,dy+T-2,T,2);}}
     if(g===0&&(nb(i,j-1)===2||nb(i,j-1)===7)){x.fillStyle='#4aa83a';x.fillRect(dx,dy,T,2);}}
+  drawCrossings(m,x);
   m.waterT=[];for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++){const g=m.g[gi(m,i,j)];if((g===2||g===7)&&((i*7+j*13)%4===0))m.waterT.push([i,j,(i*31+j*17)%10]);}
   // 지붕 없는 그림자 (건물 아래)
   for(const o of m.objs)if(o.t==='house'){x.fillStyle='rgba(0,0,0,.16)';x.fillRect(o.bx+3,o.base-3,o.bw-2,5);}
