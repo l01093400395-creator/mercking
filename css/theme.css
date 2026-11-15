@@ -82,3 +82,7 @@ input{border:2px solid var(--ink)!important;border-radius:4px;box-shadow:inset 0
 #edBar{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:25;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:8px 10px;max-width:min(760px,96vw)}
 #edBar button{padding:5px 10px;font-size:13px}
 #edBar .edT{font-size:13px;flex-basis:100%;text-align:center}
+@media (max-width:600px){#dmap .dmtop{font-size:12px;max-width:calc(100% - 130px);padding:6px 8px}#dmap .dmtop #dmLoot{display:block;font-size:11px}
+  .dmparty .pm{padding:3px 5px;font-size:11px}}
+@media (max-width:600px){.bhint{white-space:normal;width:94vw;text-align:center;font-size:11px;top:50px}#bTitle{font-size:12px;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btop .tog{font-size:11px;padding:4px 6px}}
+@media (max-width:600px){.wloc{font-size:10px!important;padding:2px 4px!important}.wloc small{display:none}}

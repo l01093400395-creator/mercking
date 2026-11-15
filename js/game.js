@@ -349,7 +349,7 @@ class Battle{
     u.anim='attack';u.at=0;}
   stepAct(a){const u=a.u;
     if(a.melee&&a.tg){const p=Math.min(1,a.t/.28),back=Math.max(0,(a.t-.7)/.25);
-      const o=this.offFn?this.offFn(u):{x:(u.side===0?-62:62),y:0};const tx=a.tg.x+o.x,ty=a.tg.y+o.y+a.oy;
+      const o=this.offFn?this.offFn(u):{x:(u.side===0?-62:62),y:0};const tx=a.tg.x+o.x+(o.x===0?a.oy*1.6:0),ty=a.tg.y+o.y+(o.x===0?0:a.oy);
       if(a.t<.28){u.x=u.hx+(tx-u.hx)*p;u.y=u.hy+(ty-u.hy)*p;u.anim='walk';}
       else if(a.t<.7){u.x=tx;u.y=ty;if(u.anim!=='attack'&&u.anim!=='hurt'){u.anim='attack';u.at=0;}}
       else{u.x=tx+(u.hx-tx)*Math.min(1,back);u.y=ty+(u.hy-ty)*Math.min(1,back);u.anim='walk';}

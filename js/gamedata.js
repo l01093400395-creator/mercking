@@ -396,7 +396,7 @@ const DECOR={
   barrel:{n:'술통 더미',pt:8,price:[250,1200,6000,26000],tier:1,ic:I(7,3),spr:'barrel'},
   crops:{n:'채소밭',pt:12,price:[400,1800,8000,34000],tier:1,ic:I(15,4),spr:'crops'},
   lantern:{n:'등불',pt:14,price:[0,2400,10000,40000],tier:2,ic:I(5,2),spr:'lantern'},
-  scarecrow:{n:'허수아비',pt:15,price:[0,2600,11000,42000],tier:2,ic:I(1,12),spr:'scarecrow'},
+  scarecrow:{n:'건초 더미',pt:15,price:[0,2600,11000,42000],tier:2,ic:I(1,12),spr:'scarecrow'},
   windmill:{n:'풍차',pt:40,price:[0,9000,30000,100000],tier:2,ic:I(1,15),spr:'windmill',big:true},
   statue:{n:'영웅 석상',pt:35,price:[0,0,26000,90000],tier:3,ic:I(2,5),spr:'statue'},
   banner:{n:'용병단 깃발',pt:25,price:[0,0,16000,60000],tier:3,ic:I(2,10),spr:'banner'},
