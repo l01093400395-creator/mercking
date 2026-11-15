@@ -86,3 +86,5 @@ input{border:2px solid var(--ink)!important;border-radius:4px;box-shadow:inset 0
   .dmparty .pm{padding:3px 5px;font-size:11px}}
 @media (max-width:600px){.bhint{white-space:normal;width:94vw;text-align:center;font-size:11px;top:50px}#bTitle{font-size:12px;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btop .tog{font-size:11px;padding:4px 6px}}
 @media (max-width:600px){.wloc{font-size:10px!important;padding:2px 4px!important}.wloc small{display:none}}
+@media (max-width:600px){#edBar{left:2vw;right:2vw;transform:none;max-width:none;bottom:54px;gap:4px;padding:6px}#edBar button{font-size:12px;padding:4px 7px}#edBar .edT{font-size:12px}}
+body.editing #guide{display:none!important}

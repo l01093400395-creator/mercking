@@ -29,7 +29,8 @@ for(const k of ['ss16','camp','campfire'])LIST.push(['t_'+k,'assets/tiles/'+k+'.
 for(const k of ['Explosion','Ice','RockSpike','Spark','WaterPillar','arrow'])LIST.push(['fx_'+k,'assets/fx/'+k+'.png']);
 for(const k of ['expression_chat','expression_alerted','expression_attack','expression_love','expression_stress','expression_working','indicator','sword','selectbox_tl','selectbox_tr','selectbox_bl','selectbox_br','label_left','label_middle','label_right','hammer'])LIST.push(['ui_'+k,'assets/ui/'+k+'.png']);
 LIST.push(['raven','assets/icons/raven32.png']);
-LIST.push(['el_mf_bunny','assets/ss/el/mf_bunny.png'],['el_mf_deer','assets/ss/el/mf_deer.png'],['el_coracle','assets/ss/el/coracle.png'],['t_goldmine','assets/tiles/goldmine.png'],['dg_dtiles','assets/dg/dtiles.png'],['el_crate_base','assets/ss/el/crate_base.png'],['el_crate_top','assets/ss/el/crate_top.png'],['dg_props','assets/dg/props.png'],['w_tiles','assets/world/tileset.png'],['w_mount','assets/world/mountains.png'],['w_water','assets/world/water.png']);
+for(const k of ['warrior_blue','warrior_yellow','archer_blue'])LIST.push(['ts_'+k,'assets/ts/'+k+'.png']);
+LIST.push(['t_bridges','assets/tiles/bridges.png'],['el_mf_bunny','assets/ss/el/mf_bunny.png'],['el_mf_deer','assets/ss/el/mf_deer.png'],['el_coracle','assets/ss/el/coracle.png'],['t_goldmine','assets/tiles/goldmine.png'],['dg_dtiles','assets/dg/dtiles.png'],['el_crate_base','assets/ss/el/crate_base.png'],['el_crate_top','assets/ss/el/crate_top.png'],['dg_props','assets/dg/props.png'],['w_tiles','assets/world/tileset.png'],['w_mount','assets/world/mountains.png'],['w_water','assets/world/water.png']);
 for(const k of ['gable','blue2','red','mansion','flat'])for(let r=0;r<5;r++)LIST.push(['bld_'+k+'_'+r,'assets/bld/'+k+'_'+r+'.png']);
 for(const k of ['ruin','fort','temple','crystal','cave','sewer','dock','volcano','abyss'])LIST.push(['dg_'+k,'assets/dg/tiles_'+k+'.png']);
 for(const k of ['torch','sidetorch','candle','chest','minichest','peaks','flame','flag','coin','box'])LIST.push(['dg_'+k,'assets/dg/'+k+'.png']);
@@ -136,6 +137,8 @@ function drawBoss(c,k,anim,t,x,y,s,opt){opt=opt||{};const im=IMG['b_'+k];if(!im)
 function drawAny(c,desc,anim,t,x,y,s,faceLeft,opt){opt=Object.assign({},opt||{});if(opt.flash>0){const f=Math.min(1,opt.flash);opt.flash=0;drawAny(c,desc,anim,t,x,y,s,faceLeft,opt);c.save();c.globalCompositeOperation='lighter';c.globalAlpha=f*.8;drawAny(c,desc,anim,t,x,y,s,faceLeft,opt);c.restore();return;}
   if(desc.kind==='human'){opt.flip=faceLeft;opt.tool=desc.tool;opt.bow=desc.bow;opt.staff=desc.staff;opt.staffColor=desc.staffColor;opt.wIc=desc.wIc;opt.wCls=desc.wCls;opt.shIc=desc.shIc;drawHuman(c,desc.look,anim,t,x,y,s,opt);}
   else if(desc.kind==='ss'){opt.flip=faceLeft;drawSS(c,desc.k,desc.tint,anim,t,x,y,s,opt);}
+  else if(desc.kind==='tsu'){const im=IMG['ts_'+desc.k];if(!im)return;const row={idle:0,walk:1,attack:2}[anim]??0;const n=desc.k.startsWith('archer')&&row===2?8:6;const f=Math.floor(t*(row===2?10:8))%n;
+    c.save();c.translate(Math.round(x),Math.round(y));if(faceLeft)c.scale(-1,1);if(opt.alpha!=null)c.globalAlpha=opt.alpha;c.drawImage(im,f*48,row*48,48,48,-24*s,-34*s,48*s,48*s);c.restore();}
   else if(desc.kind==='rpg'){opt.flip=faceLeft;drawRPG(c,desc.k,anim,t,x,y,s,opt);}
   else if(desc.kind==='e32'){opt.flip=faceLeft;drawE32(c,desc.k,anim,t,x,y,s,opt);}
   else if(desc.kind==='ninja'){opt.flip=!faceLeft;if(anim==='death')opt.alpha=Math.max(0,1-t*1.6);drawNinja(c,desc.k,anim,t,x,y,s,opt);}
@@ -193,7 +196,7 @@ function mkMap(key,w,h){return {key,w,h,g:new Uint8Array(w*h),blk:new Uint8Array
 const gi=(m,x,y)=>y*m.w+x;
 function fillG(m,x,y,w,h,v){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(i>=0&&j>=0&&i<m.w&&j<m.h)m.g[gi(m,i,j)]=v;}
 function block(m,x,y,w,h){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(i>=0&&j>=0&&i<m.w&&j<m.h)m.blk[gi(m,i,j)]=1;}
-function isBlocked(m,x,y){if(x<0||y<0||x>=m.w||y>=m.h)return true;const g=m.g[gi(m,x,y)];return m.blk[gi(m,x,y)]||g===2||g===7;}
+function isBlocked(m,x,y){if(x<0||y<0||x>=m.w||y>=m.h)return true;const g=m.g[gi(m,x,y)];return m.blk[gi(m,x,y)]||g===2||g===7||g===9||g===12;}
 // 건물: x=왼쪽, door=문이 있는 줄(y). h=지붕 줄 수 → 건물 높이 h+3
 const SPRB={gable:{w:48,h:43,d:24,cx:10,cy:8},blue2:{w:48,h:58,d:24,cx:9,cy:23},red:{w:52,h:45,d:26,cx:18,cy:3},mansion:{w:130,h:135,d:81,cx:116,cy:30,rows:6},flat:{w:43,h:48,d:24,cx:16,cy:4}};
 function sprHouse(m,o){const S=SPRB[o.spr];const b=Object.assign({t:'house',roof:o.roof??0},o);b.dx=o.x+Math.floor(o.w/2);b.dy=o.door;
@@ -229,6 +232,16 @@ function road(m,x,y,w,h){fillG(m,x,y,w,h,1);}
 // 돌담 (Sunnyside 돌벽 타일 자동 연결), gx = 위쪽 가운데 문
 function stoneRing(m,x,y,w,h,gx){m.wset=m.wset||new Set();const put=(X,Y,gate)=>{const k=gi(m,X,Y);m.wset.add(k);m.objs.push({t:'swall',x:X,y:Y,gate,base:(Y+1)*T-2});block(m,X,Y,1,1);};
   const G=[].concat(gx);for(let i=x;i<x+w;i++){if(G.includes(i)){m.g[gi(m,i,y)]=1;m.g[gi(m,i,y+h-1)]=1;continue;}put(i,y);put(i,y+h-1);}for(let j=y+1;j<y+h-1;j++){put(x,j);put(x+w-1,j);}}
+// ── 지형: 언덕(평지 위 고지대) · 강 · 다리 ──
+// 언덕: 테두리(12)·절벽면(9)은 못 지나감, 계단(10)으로만 오르내림. 위쪽 면(8)은 걸을 수 있음
+function hill(m,x,y,w,h,stairs){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++){const edge=i===x||i===x+w-1||j===y;m.g[gi(m,i,j)]=edge?12:8;}
+  for(let i=x;i<x+w;i++){m.g[gi(m,i,y+h)]=9;m.g[gi(m,i,y+h+1)]=9;}
+  for(const sx of stairs||[]){m.g[gi(m,sx,y+h-1)]=8;m.g[gi(m,sx,y+h)]=10;m.g[gi(m,sx,y+h+1)]=10;}
+  m.hills=(m.hills||[]).concat([{x,y,w,h}]);}
+// 강 (세로 or 가로 띠) + 다리
+function riverV(m,x,w,y0,y1){for(let j=y0;j<y1;j++){const wob=Math.round(Math.sin(j*.35)*1);for(let i=0;i<w;i++)m.g[gi(m,x+i+wob,j)]=2;}}
+function riverH(m,y,h,x0,x1){for(let i=x0;i<x1;i++){const wob=Math.round(Math.sin(i*.3)*1);for(let j=0;j<h;j++)m.g[gi(m,i,y+j+wob)]=2;}}
+function bridge(m,x,y,len,dir){for(let k=0;k<len;k++){for(let q=0;q<2;q++){const X=dir==='h'?x+k:x+q,Y=dir==='h'?y+q:y+k;m.g[gi(m,X,Y)]=dir==='h'?11:13;}}}
 // 울타리 상자(문 1칸 비움). gate: 't' 위 / 'b' 아래, 문 칸은 길로 깔아 출입구와 이어짐
 function fenceBox(m,x,y,w,h,gate,gx){gx=gx??x+Math.floor(w/2);const gy=gate==='t'?y:y+h-1;
   for(const yy of [y,y+h-1]){if(yy===gy){fence(m,x,yy,gx-x,'h');fence(m,gx+1,yy,x+w-gx-1,'h');}else fence(m,x,yy,w,'h');}
@@ -259,8 +272,11 @@ const CB={
   bunk:{size:()=>[7,2],def:[9,8]},board:{size:()=>[2,1],def:[23,10]},store:{size:()=>[4,3],def:[28,9]},
   clinic:{size:()=>[4,3],def:[5,19]},tavern:{size:()=>[5,3],def:[10,19]},forge:{size:()=>[5,3],def:[26,19]},
   hall:{size:()=>[5,3],def:[32,19]},training:{size:()=>[9,4],def:[26,25]},fountain:{size:()=>[5,3],def:[12,25]}};
-function campPos(k){const s=S();s.camp.pos=s.camp.pos||{};const p=s.camp.pos[k];return p?p:CB[k].def;}
-function campRect(k,pos){const s=S(),B=s.camp.built;const [w,h]=CB[k].size(B);const [cx,by]=pos||campPos(k);return {x:cx-Math.floor(w/2),y:by-h+1,w,h};}
+const isDec=k=>typeof k==='string'&&k.startsWith('d:');
+const DECW=d=>['fence','crops','barrel'].includes(D.DECOR[d].spr)?2:1;
+function campPos(k){const s=S();if(isDec(k)){const i=+k.slice(2);const p=(s.camp.dpos||[])[i];if(p)return p;const a=(MAP&&MAP.decorAt||[]).find(o=>o.i===i);return a?[a.x+Math.floor(a.w/2),a.y]:[18,16];}
+  s.camp.pos=s.camp.pos||{};const p=s.camp.pos[k];return p?p:CB[k].def;}
+function campRect(k,pos){const s=S(),B=s.camp.built;if(isDec(k)){const w=DECW(s.camp.decor[+k.slice(2)]);const [cx,by]=pos||campPos(k);return {x:cx-Math.floor(w/2),y:by,w,h:1};}const [w,h]=CB[k].size(B);const [cx,by]=pos||campPos(k);return {x:cx-Math.floor(w/2),y:by-h+1,w,h};}
 function campHas(k){const s=S(),B=s.camp.built;if(CB[k].fixed)return !CB[k].need||CB[k].need(s.camp.tier);return !!B[k];}
 function defaultCampRoads(w,h){const r=[];const add=(x,y,ww,hh,v)=>{for(let j=y;j<y+hh;j++)for(let i=x;i<x+ww;i++)if(i>=0&&j>=0&&i<w&&j<h)r.push([i,j,v||1]);};
   add(13,10,11,7,4);add(0,13,13,1);add(24,13,w-24,1);add(18,17,1,h-17);add(3,21,w-6,1);add(18,7,1,3);return r;}
@@ -290,9 +306,13 @@ function buildCamp(opt){opt=opt||{};const s=S(),tier=s.camp.tier,B=s.camp.built;
   const small=[[14,16],[22,16],[13,11],[23,15],[2,11],[33,11],[2,15],[33,15],[8,12],[28,12],[16,23],[20,23],[15,25],[20,25],[32,25],[1,18],[34,18],[25,11],[11,12],[30,12],[37,16],[39,22],[40,12],[6,14],[29,15]];
   const tall=[[5,11],[31,11],[2,19],[33,19],[14,25],[21,25],[25,12],[14,8],[9,11],[27,11],[16,19],[20,17],[38,18],[40,26]];
   let si=0,ti=0,bi=0;const big=[[W-5,0]];
-  for(const d of s.camp.decor){const dd=D.DECOR[d];if(dd.big){const p=big[bi++];if(p){m.objs.push({t:'windmill',x:p[0],y:p[1],base:(p[1]+6)*T,name:'풍차'});block(m,p[0]+1,p[1]+4,4,2);m.camp.windmill={x:p[0]+1,y:p[1]+4,w:4,h:2};}continue;}
+  m.decorAt=[];s.camp.dpos=s.camp.dpos||[];
+  for(let di=0;di<s.camp.decor.length;di++){const d=s.camp.decor[di];const dd=D.DECOR[d];
+    if(!dd.big&&s.camp.dpos[di]){const w=DECW(d),[cx,by]=s.camp.dpos[di];const x0=cx-Math.floor(w/2);let ok=x0>0&&by>0&&x0+w<W&&by<Hh-1;for(let i=0;ok&&i<w;i++)if(m.blk[gi(m,x0+i,by)])ok=false;
+      if(ok){decorObj(m,d,x0,by);m.decorAt.push({i:di,x:x0,y:by,w});continue;}}
+    if(dd.big){const p=big[bi++];if(p){m.objs.push({t:'windmill',x:p[0],y:p[1],base:(p[1]+6)*T,name:'풍차'});block(m,p[0]+1,p[1]+4,4,2);m.camp.windmill={x:p[0]+1,y:p[1]+4,w:4,h:2};}continue;}
     const isTall=['statue','lantern','banner','well','scarecrow'].includes(dd.spr);let p;
-    do{p=isTall?tall[ti++]:small[si++];}while(p&&(p[0]>=W-1||p[1]>=Hh-1||m.blk[gi(m,p[0],p[1])]||m.g[gi(m,p[0],p[1])]!==0||(isTall&&m.blk[gi(m,p[0],p[1]-1)])));if(!p)continue;decorObj(m,d,p[0],p[1]);}
+    do{p=isTall?tall[ti++]:small[si++];}while(p&&(p[0]>=W-1||p[1]>=Hh-1||m.blk[gi(m,p[0],p[1])]||m.g[gi(m,p[0],p[1])]!==0||(isTall&&m.blk[gi(m,p[0],p[1]-1)])));if(!p)continue;decorObj(m,d,p[0],p[1]);m.decorAt.push({i:di,x:p[0],y:p[1],w:DECW(d)});}
   for(const [k,x,y] of [['bush',14,18],['rock',21,19],['bush',32,8],['bush',3,8],['bush',34,24],['rock',5,22],['bush',38,9],['rock',44,20]])if(x<W-2&&y<Hh-2&&!m.blk[gi(m,x,y)]&&!m.blk[gi(m,x+1,y)]&&m.g[gi(m,x,y)]===0&&m.g[gi(m,x+1,y)]===0)prop(m,k,x,y);
   treeBorder(m,[[0,13,1],[W-1,13,1],[18,Hh-1,1]]);
   for(const [x,y] of [[2,3],[4,2],[33,3],[34,8],[1,8],[33,20],[2,19],[40,4],[44,10],[42,28]])if(x<W-1&&y<Hh-1&&!m.blk[gi(m,x,y)]&&m.g[gi(m,x,y)]===0)tree(m,x,y);
@@ -305,6 +325,7 @@ function campCanPlace(k,pos){const s=S();const [W,Hh]=CAMP_SIZE[s.camp.tier]||CA
   const ov=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
   for(const o in CB){if(o===k||!campHas(o))continue;if(ov(R,campRect(o)))return false;}
   if(MAP&&MAP.camp&&MAP.camp.windmill&&ov(R,MAP.camp.windmill))return false;
+  if(isDec(k)){for(const a of MAP.decorAt||[]){if('d:'+a.i===k)continue;if(ov(R,{x:a.x,y:a.y,w:a.w,h:1}))return false;}for(let i=R.x;i<R.x+R.w;i++){const g=MAP.g[gi(MAP,i,R.y)];if(g===2||g===7)return false;}}
   for(const e of [[0,13],[W-1,13],[18,Hh-1]])if(e[0]>=R.x-1&&e[0]<=R.x+R.w&&e[1]>=R.y-1&&e[1]<=R.y+R.h)return false;
   return true;}
 /* ----- 집결지 배치 편집: 건설 / 이동 / 철거 / 길 ----- */
@@ -314,34 +335,37 @@ function edStart(mode,key){if(S().loc!=='camp'){toast('집결지에서만 할 �
   ED={mode,key:key||null,pos:null,last:null};if(mode==='place'){const p=CB[key].def;ED.pos=[p[0],p[1]];if(!campCanPlace(key,ED.pos)){const px=Math.floor(player.x/T),py=Math.floor(player.y/T);
     outer:for(let r=1;r<14;r++)for(let j=-r;j<=r;j++)for(let i=-r;i<=r;i++){const q=[px+i,py+j];if(campCanPlace(key,q)){ED.pos=q;break outer;}}}}
   edBar();}
-function edEnd(){ED=null;$('edBar').classList.add('hidden');rebuildCamp();}
-function edBar(){const b=$('edBar');b.classList.remove('hidden');const M=ED.mode;let h='';
-  const nm=ED.key?(CB[ED.key].n||D.BUILDS[ED.key].n):'';
+function edEnd(){ED=null;$('edBar').classList.add('hidden');document.body.classList.remove('editing');rebuildCamp();}
+function edBar(){const b=$('edBar');b.classList.remove('hidden');document.body.classList.add('editing');const M=ED.mode;let h='';
+  const nm=ED.key?(isDec(ED.key)?D.DECOR[S().camp.decor[+ED.key.slice(2)]].n:(CB[ED.key].n||D.BUILDS[ED.key].n)):'';
   if((M==='place'||M==='move')&&ED.key){const ok=campCanPlace(ED.key,ED.pos);h=`<span class="edT">${M==='place'?'🔨 건설':'↔ 이동'}: <b>${nm}</b> — 땅을 눌러 자리를 정하세요 ${ok?'<b class="good">놓을 수 있음</b>':'<b class="bad">겹침</b>'}</span><button class="go" id="edOk" ${ok?'':'disabled'}>✔ ${M==='place'?'여기에 짓기':'여기로 옮기기'}</button><button id="edNo">✖ 취소</button>`;}
-  else{const tip={move:'옮길 건물을 누르세요',demolish:'철거할 건물을 누르세요 (비용의 절반 환불)',road:'길을 깔 땅을 누르거나 끌어 칠하세요',unroad:'없앨 길을 누르거나 끌어 지우세요'}[M]||'';
+  else{const tip={move:'옮길 건물이나 장식을 누르세요',demolish:'철거할 건물·장식을 누르세요 (비용의 절반 환불)',road:'길을 깔 땅을 누르거나 끌어 칠하세요',unroad:'없앨 길을 누르거나 끌어 지우세요'}[M]||'';
     h=`<span class="edT">${tip}</span>`+[['move','↔ 이동'],['demolish','🗑 철거'],['road','🛤 길 깔기'],['unroad','🌱 길 없애기']].map(([k,n])=>`<button data-ed="${k}" class="${M===k?'sel':''}">${n}</button>`).join('')+`<button data-ed="build">🔨 건설</button><button class="go" id="edDone">✔ 완료</button>`;}
   b.innerHTML=h;
   b.querySelectorAll('[data-ed]').forEach(x=>x.onclick=()=>{const k=x.dataset.ed;if(k==='build'){ED=null;b.classList.add('hidden');buildPanel(null,'build');return;}ED={mode:k,key:null,pos:null,cx:ED&&ED.cx,cy:ED&&ED.cy};edBar();});
   if($('edDone'))$('edDone').onclick=edEnd;if($('edNo'))$('edNo').onclick=()=>{ED={mode:ED.mode==='place'?'move':ED.mode,key:null,pos:null,cx:ED.cx,cy:ED.cy};edBar();};
   if($('edOk'))$('edOk').onclick=()=>{const k=ED.key,s=S();if(!campCanPlace(k,ED.pos))return;
     if(ED.mode==='place'){const e=G.build(k);if(e){toast(e);return;}sfx('levelup',.4);toast('🔨 '+D.BUILDS[k].n+' 완공!');}else sfx('click',.4);
-    s.camp.pos=s.camp.pos||{};s.camp.pos[k]=ED.pos.slice();G.save();const mode=ED.mode==='place'?'move':ED.mode;const cx=ED.cx,cy=ED.cy;rebuildCamp();ED={mode,key:null,pos:null,cx,cy};edBar();};}
+    if(isDec(k)){s.camp.dpos=s.camp.dpos||[];s.camp.dpos[+k.slice(2)]=ED.pos.slice();}else{s.camp.pos=s.camp.pos||{};s.camp.pos[k]=ED.pos.slice();}G.save();const mode=ED.mode==='place'?'move':ED.mode;const cx=ED.cx,cy=ED.cy;rebuildCamp();ED={mode,key:null,pos:null,cx,cy};edBar();};}
 function edTile(px,py){const [wx,wy]=screenToWorld(px,py);return [Math.floor(wx/T),Math.floor(wy/T)];}
-function edBuildingAt(x,y){for(const k in MAP.camp||{}){if(k==='windmill')continue;const R=MAP.camp[k];if(x>=R.x&&x<R.x+R.w&&y>=R.y-2&&y<R.y+R.h)return k;}return null;}
+function edBuildingAt(x,y){for(const a of MAP.decorAt||[])if(y===a.y&&x>=a.x&&x<a.x+a.w)return 'd:'+a.i;for(const k in MAP.camp||{}){if(k==='windmill')continue;const R=MAP.camp[k];if(x>=R.x&&x<R.x+R.w&&y>=R.y-2&&y<R.y+R.h)return k;}return null;}
 function edTap(px,py,drag){const [x,y]=edTile(px,py);const M=ED.mode,s=S();
   if(M==='road'||M==='unroad'){const key=x+','+y;if(drag&&ED.last===key)return;ED.last=key;if(x<1||y<1||x>=MAP.w-1||y>=MAP.h-1)return;
     s.camp.roads=s.camp.roads.filter(r=>!(r[0]===x&&r[1]===y));if(M==='road')s.camp.roads.push([x,y,1]);
     MAP.g[gi(MAP,x,y)]=M==='road'?1:0;MAP.bg=null;paintGround(MAP);if(!drag)sfx('step',.3);return;}
   if(drag)return;
-  if((M==='place'||M==='move')&&ED.key){const R=campRect(ED.key,[0,0]);ED.pos=[x,y+Math.floor(R.h/2)];edBar();return;}
-  const k=edBuildingAt(x,y);if(!k){toast('건물을 눌러 주세요');return;}
+  if((M==='place'||M==='move')&&ED.key){const R=campRect(ED.key,[0,0]);ED.pos=isDec(ED.key)?[x,y]:[x,y+Math.floor(R.h/2)];edBar();return;}
+  const k=edBuildingAt(x,y);if(!k){toast('건물이나 장식을 눌러 주세요');return;}
   if(M==='move'){ED.key=k;ED.pos=campPos(k).slice();edBar();sfx('click',.3);}
+  else if(M==='demolish'&&isDec(k)){const i=+k.slice(2),d=s.camp.decor[i];const ref=Math.round((G.decorPrice(d)||0)*.5);
+    confirmBox(`장식 [${D.DECOR[d].n}]을(를) 치울까요? ${fmt(ref)} G를 돌려받습니다. (꾸미기 점수도 줄어요)`,()=>{s.camp.decor.splice(i,1);(s.camp.dpos||[]).splice(i,1);G.addGold(ref);G.save();sfx('hit',.4);rebuildCamp();edBar();});}
   else if(M==='demolish'){if(CB[k].fixed){toast(CB[k].n+'은(는) 철거할 수 없어요 (이동만 가능)');return;}const b=D.BUILDS[k];
     confirmBox(`[${b.n}]을(를) 철거할까요? ${fmt(Math.round(b.cost*.5))} G를 돌려받습니다.`,()=>{s.camp.built[k]=false;G.addGold(Math.round(b.cost*.5));if(s.camp.pos)delete s.camp.pos[k];G.save();sfx('hit',.4);rebuildCamp();edBar();});}}
 function drawEdit(c){if(!edOn())return;const m=MAP;c.save();c.strokeStyle='rgba(255,255,255,.13)';c.lineWidth=1;
   for(let i=1;i<m.w;i++){c.beginPath();c.moveTo(i*T,0);c.lineTo(i*T,m.h*T);c.stroke();}for(let j=1;j<m.h;j++){c.beginPath();c.moveTo(0,j*T);c.lineTo(m.w*T,j*T);c.stroke();}
   const corners=(x,y,w,h,col)=>{const L=[['selectbox_tl',x-3,y-3],['selectbox_tr',x+w-5,y-3],['selectbox_bl',x-3,y+h-6],['selectbox_br',x+w-5,y+h-6]];for(const [k,a,b] of L){const im=IMG['ui_'+k];if(im)c.drawImage(im,a,b);}};
   if((ED.mode==='move'||ED.mode==='demolish')&&!ED.key)for(const k in m.camp){if(k==='windmill')continue;const R=m.camp[k];if(ED.mode==='demolish'&&CB[k].fixed)continue;c.fillStyle=ED.mode==='demolish'?'rgba(255,80,60,.18)':'rgba(255,230,120,.16)';c.fillRect(R.x*T,R.y*T,R.w*T,R.h*T);corners(R.x*T,R.y*T,R.w*T,R.h*T);}
+  if((ED.mode==='move'||ED.mode==='demolish')&&!ED.key)for(const a of m.decorAt||[]){c.fillStyle='rgba(120,200,255,.2)';c.fillRect(a.x*T,a.y*T,a.w*T,T);corners(a.x*T,a.y*T,a.w*T,T);}
   if(ED.key&&ED.pos){const R=campRect(ED.key,ED.pos);const ok=campCanPlace(ED.key,ED.pos);c.fillStyle=ok?'rgba(90,220,90,.35)':'rgba(240,70,60,.4)';c.fillRect(R.x*T,R.y*T,R.w*T,R.h*T);
     c.strokeStyle=ok?'#7fff7f':'#ff6a5a';c.lineWidth=2;c.strokeRect(R.x*T+1,R.y*T+1,R.w*T-2,R.h*T-2);corners(R.x*T,R.y*T,R.w*T,R.h*T);
     const lx=(R.x+R.w/2)*T,ly=R.y*T-10;const lm=IMG.ui_label_middle,ll=IMG.ui_label_left,lr=IMG.ui_label_right,hm=IMG.ui_hammer;
@@ -383,19 +407,29 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     stall(m,9,14,'#d04a3a');bench(m,18,14);sign(m,15,13);prop(m,'lamp',5,13);prop(m,'lamp',23,13);prop(m,'barrel',25,10);bed(m,23,14,3,1);
     for(const [x,y] of [[31,14],[32,16],[1,15],[14,23],[30,18]])tree(m,x,y);
     treeBorder(m,[[0,12,1],[33,12,1]]);m.spawn={x:1,y:12};m.exits=[{x:0,y:12,to:'world',n:'월드맵'},{x:33,y:12,to:'world',n:'월드맵'}];}
-  else if(tk==='t2'){m=mkMap(tk,40,26);m.pathMat='gravel';
-    road(m,0,13,40,1);road(m,4,20,32,1);road(m,20,14,1,6);road(m,33,6,1,7);
-    H({x:4,w:5,h:2,door:12,roof:0,act:'guild',name:'광산 길드',sign:D.I(18,9),wing:{s:'l',w:3,roof:2},boxes:1});
-    H({x:11,w:4,h:1,door:12,roof:1,act:'shop',name:'광부 잡화점',sign:D.I(7,3),awning:'#3a7ad0'});
-    H({x:16,w:5,h:2,door:12,roof:4,act:'inn',name:'광부 여관',sign:D.I(8,10),wing:{s:'r',w:2},chimney:1,boxes:1});
-    const sm=H({x:24,w:5,h:1,door:12,roof:2,act:'smith',name:'대장간',sign:D.I(7,13)});sm.smoke=true;prop(m,'anvil',29,11);
-    H({x:6,w:4,h:1,door:19,roof:2,name:'목수 공방',chimney:1});H({x:12,w:4,h:1,door:19,roof:3,name:'광부 숙소',wing:{s:'r',w:3},chimney:1});H({x:24,w:4,h:1,door:19,roof:1,name:'민가',boxes:1,chimney:1});H({x:29,w:4,h:1,door:19,roof:2,name:'창고'});
-    m.objs.push({t:'cliff',x:0,y:0,w:40,base:4*T});block(m,0,0,40,5);
-    m.objs.push({t:'mine',x:32,y:3,base:6*T});block(m,31,5,5,1);road(m,33,6,1,1);m.g[gi(m,33,5)]=1;
-    for(let y=6;y<13;y++)m.objs.push({t:'rail',x:35,y,base:(y+1)*T-14});block(m,35,6,1,7);m.objs.push({t:'cart',x:35,y:8,base:9*T});
-    for(const [x,y] of [[36,8],[37,10],[2,16],[35,16]])prop(m,'rock',x,y);
-    prop(m,'crate',10,11);prop(m,'barrels',22,17);stall(m,8,15,'#3a7ad0');stall(m,16,15,'#d08a2a');bench(m,26,15);sign(m,21,14);prop(m,'lamp',3,14);prop(m,'lamp',34,14);
-    treeBorder(m,[[0,13,1],[39,13,1],[0,0,60]].slice(0,2));m.spawn={x:1,y:13};m.exits=[{x:0,y:13,to:'world',n:'월드맵'},{x:39,y:13,to:'world',n:'월드맵'}];}
+  else if(tk==='t2'){m=mkMap(tk,48,32);m.pathMat='gravel';
+    m.objs.push({t:'cliff',x:0,y:0,w:48,base:4*T});block(m,0,0,48,5);
+    road(m,0,15,48,1);road(m,0,27,48,1);road(m,12,16,1,11);road(m,38,13,1,2);road(m,14,6,1,9);road(m,3,6,22,1);
+    // 광산 단지 언덕 (계단으로만 오르내림)
+    hill(m,30,5,16,6,[38]);
+    m.objs.push({t:'mine',x:36,y:4,base:7*T});block(m,35,6,5,1);
+    for(let y=8;y<11;y++)m.objs.push({t:'rail',x:42,y,base:(y+1)*T-14});m.objs.push({t:'cart',x:42,y:9,base:10*T});block(m,42,8,1,3);
+    for(const [x,y] of [[31,7],[32,9],[44,7]])prop(m,'rock',x,y);prop(m,'crate',40,9);prop(m,'barrels',33,8);prop(m,'lamp',37,9);prop(m,'lamp',39,9);
+    // 강 + 다리
+    riverH(m,21,2,0,48);bridge(m,11,20,4,'v');bridge(m,35,20,4,'v');
+    // 대장장이 거리 (용광로·모루·물통 작업장)
+    const sm=H({x:2,w:4,h:1,door:14,roof:2,act:'smith',name:'대장간',sign:D.I(7,13)});sm.smoke=true;
+    for(const [x,y] of [[2,7],[7,7],[2,9],[7,9]]){m.objs.push({t:'furnace',x,y,base:(y+2)*T});block(m,x,y+1,2,1);prop(m,'anvil',x+2,y+1);}
+    m.objs.push({t:'trough',x:11,y:8,base:9*T});block(m,11,8,2,1);prop(m,'barrel',11,10);prop(m,'barrels',16,8);prop(m,'crate',19,8);prop(m,'sack',22,8);m.labels.push({x:8,y:7.3,n:'대장장이 거리'});
+    // 큰길 북쪽
+    H({x:15,w:4,h:2,door:14,roof:0,act:'guild',name:'광산 길드',sign:D.I(18,9)});H({x:20,w:4,h:1,door:14,roof:1,act:'shop',name:'광부 잡화점',sign:D.I(7,3)});
+    H({x:25,w:4,h:2,door:14,roof:4,act:'inn',name:'광부 여관',sign:D.I(8,10)});H({x:30,w:4,h:1,door:18,roof:3,name:'광석 감정소'});H({x:43,w:4,h:1,door:18,roof:1,name:'창고'});
+    // 큰길 남쪽 · 강 남쪽 주택
+    for(const [x,r] of [[1,3],[5,1],[16,2],[20,0],[24,3],[38,2]])H({x,w:4,h:1,door:19,roof:r,name:'광부 숙소'});
+    for(const [x,r] of [[1,0],[5,2],[15,1],[19,4],[23,2],[27,0],[39,3],[43,1]])H({x,w:4,h:1,door:26,roof:r,name:'민가'});
+    road(m,0,20,48,0);for(const x of [3,7,18,22,26,30,41,45])road(m,x,16,1,1),road(m,x,17,1,0);
+    stall(m,31,13,'#3a7ad0');stall(m,33,13,'#d08a2a');bench(m,8,17);prop(m,'lamp',3,16);prop(m,'lamp',44,16);prop(m,'lamp',33,28);
+    treeBorder(m,[[0,15,1],[47,15,1]]);m.spawn={x:1,y:15};m.exits=[{x:0,y:15,to:'world',n:'월드맵'},{x:47,y:15,to:'world',n:'월드맵'}];}
   else if(tk==='t3'){m=mkMap(tk,46,30);m.pathMat='slab';
     fillG(m,0,23,46,2,3);fillG(m,0,25,46,5,2);fillG(m,0,28,46,2,7);
     road(m,0,11,46,1);road(m,0,19,46,1);road(m,12,12,1,7);road(m,33,12,1,7);road(m,22,20,1,3);
@@ -406,33 +440,51 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     const sm=H({x:26,w:4,h:1,door:10,roof:2,act:'smith',name:'항구 대장간',sign:D.I(7,13)});sm.smoke=true;
     H({x:32,w:5,h:2,door:10,roof:4,act:'relic',name:'유물 상점',sign:D.I(10,6),spire:'r',spireRoof:0});
     H({x:41,w:4,h:1,door:10,roof:3,name:'민가',chimney:1,boxes:1});
-    H({x:2,w:4,h:1,door:18,roof:3,name:'선원 숙소',chimney:1});H({x:7,w:4,h:1,door:18,roof:1,name:'민가',boxes:1});H({x:36,w:4,h:1,door:18,roof:2,name:'창고'});H({x:41,w:4,h:1,door:18,roof:0,name:'세관',boxes:1});
+    H({x:2,w:4,h:1,door:18,roof:3,name:'선원 숙소',chimney:1});H({x:13,w:4,h:1,door:18,roof:1,name:'민가',boxes:1});H({x:36,w:4,h:1,door:18,roof:2,name:'창고'});H({x:41,w:4,h:1,door:18,roof:0,name:'세관',boxes:1});
     prop(m,'fountain',22,15);for(const x of [17,27])prop(m,'lamp',x,14);prop(m,'crate',19,21);prop(m,'crate',25,21);prop(m,'barrels',29,21);prop(m,'sack',14,21);prop(m,'barrels',3,21);
-    stall(m,15,13,'#2a8ab8');stall(m,29,13,'#d04a3a');bench(m,19,17);bench(m,24,17);bed(m,13,16,3,2);bed(m,30,16,2,5);
-    road(m,3,5,40,1);road(m,12,6,1,5);road(m,33,6,1,5);road(m,23,6,1,5);
-    H({x:4,w:4,h:1,door:4,roof:2,name:'어부의 집'});H({x:8,w:4,h:1,door:4,roof:0,name:'민가'});H({x:15,w:4,h:1,door:4,roof:3,name:'민가'});H({x:19,w:4,h:1,door:4,roof:1,name:'그물 공방'});
+    stall(m,15,13,'#2a8ab8');stall(m,29,13,'#d04a3a');bench(m,19,17);bench(m,24,17);bed(m,30,16,2,5);
+    road(m,13,5,30,1);road(m,12,5,1,6);road(m,33,6,1,5);road(m,23,6,1,5);
+    // 바다가 보이는 언덕 (계단으로만) + 개울과 다리
+    hill(m,1,1,11,4,[10]);road(m,10,7,1,4);H({x:3,w:4,h:1,door:4,roof:2,name:'등대지기 집'});prop(m,'statue',8,3);m.objs.push({t:'flowers',x:2,y:4,base:5*T-8,seed:9});m.objs.push({t:'flowers',x:7,y:4,base:5*T-8,seed:4});
+    riverV(m,8,2,13,23);bridge(m,7,19,4,'h');
+    H({x:15,w:4,h:1,door:4,roof:3,name:'민가'});H({x:19,w:4,h:1,door:4,roof:1,name:'그물 공방'});
     H({x:26,w:4,h:1,door:4,roof:4,name:'민가'});H({x:29,w:4,h:1,door:4,roof:2,name:'민가'});H({x:36,w:4,h:1,door:4,roof:0,name:'선장 댁'});H({x:40,w:4,h:1,door:4,roof:3,name:'민가'});
     bench(m,38,8);bed(m,26,7,3,3);bed(m,5,7,3,6);prop(m,'barrels',17,7);
     m.boats=[{x:15*T,y:26.2*T,ph:0},{x:30*T,y:27*T,ph:1.6},{x:42*T,y:26.5*T,ph:3}];
     treeBorder(m,[[0,11,1],[45,11,1],[0,19,1],[45,19,1]]);m.spawn={x:1,y:11};m.exits=[{x:0,y:11,to:'world',n:'월드맵'},{x:0,y:19,to:'world',n:'월드맵'}];}
-  else{m=mkMap(tk,54,34);m.pathMat='marble';
-    road(m,0,16,54,1);road(m,26,3,2,30);fillG(m,19,12,16,9,4);road(m,5,25,44,1);road(m,8,8,38,1);
-    H({x:21,w:12,h:3,door:7,roof:4,name:'황궁',big:true,spr:'mansion'});
-    H({x:6,w:6,h:2,door:15,roof:0,act:'guild',name:'황성 의뢰소',sign:D.I(18,9),boxes:1});
-    H({x:13,w:4,h:1,door:15,roof:1,act:'shop',name:'귀족 상점',sign:D.I(7,3),awning:'#8a3ab8'});
-    H({x:36,w:6,h:2,door:15,roof:4,act:'inn',name:'황성 여관',sign:D.I(8,10),chimney:1,boxes:1});
-    const sm=H({x:43,w:5,h:1,door:15,roof:2,act:'smith',name:'왕실 대장간',sign:D.I(7,13)});sm.smoke=true;
-    H({x:4,w:7,h:2,door:24,roof:0,act:'hq',name:'메인 길드 본부',sign:D.I(2,10),spire:'r',boxes:1});
-    H({x:15,w:5,h:1,door:24,roof:4,act:'relic',name:'유물 상점',sign:D.I(10,6),boxes:1});
-    H({x:36,w:6,h:2,door:24,roof:3,act:'classhall',name:'전직의 전당',sign:D.I(91,9),spire:'l',spireRoof:3});
-    H({x:9,w:5,h:1,door:7,roof:3,name:'귀족 저택',chimney:1,boxes:1});H({x:40,w:5,h:1,door:7,roof:1,name:'귀족 저택',chimney:1,boxes:1});H({x:2,w:4,h:1,door:7,roof:2,name:'민가',chimney:1});H({x:47,w:4,h:1,door:7,roof:0,name:'민가',chimney:1});
-    H({x:44,w:5,h:1,door:24,roof:1,name:'민가',boxes:1});H({x:21,w:4,h:1,door:24,roof:2,name:'민가',chimney:1});
-    fillG(m,16,28,22,4,3);stoneRing(m,15,27,24,6,[26,27]);
-    for(const [x,y] of [[18,29],[35,29],[18,30],[35,30]])prop(m,'barrel',x,y);m.objs.push({t:'statue2',x:22,y:29,base:31*T,act:'arena',name:'왕실 투기장'});block(m,22,29,2,2);m.objs.push({t:'statue2',x:31,y:29,base:31*T,act:'arena',name:'왕실 투기장'});block(m,31,29,2,2);
-    m.labels.push({x:27,y:28.2,n:'왕실 투기장',act:'arena'});
-    prop(m,'fountain',26,17);prop(m,'statue',21,13);prop(m,'statue',32,13);for(const x of [20,34])prop(m,'lamp',x,18);for(const x of [3,50,11,44])prop(m,'lamp',x,17);
-    stall(m,22,19,'#8a3ab8');stall(m,30,19,'#d04a3a');bench(m,23,14);bench(m,29,14);bed(m,19,20,2,1);bed(m,33,20,2,4);sign(m,25,17);
-    treeBorder(m,[[0,16,1],[53,16,1],[26,33,2]]);m.spawn={x:1,y:16};m.exits=[{x:0,y:16,to:'world',n:'월드맵'},{x:53,y:16,to:'world',n:'월드맵'},{x:27,y:33,to:'world',n:'월드맵'}];}
+  else{m=mkMap(tk,64,44);m.pathMat='marble';
+    // 강 + 다리 (서쪽 시가지 / 동쪽 병영)
+    road(m,0,18,64,2);road(m,0,27,43,1);road(m,2,35,42,1);road(m,1,12,18,1);road(m,1,7,17,1);road(m,16,8,1,4);road(m,42,3,1,15);road(m,27,25,2,19);
+    riverV(m,44,3,0,44);bridge(m,42,18,7,'h');bridge(m,42,32,7,'h');road(m,47,32,1,3);road(m,40,32,3,2);road(m,40,28,1,4);
+    // 황궁 언덕 (계단으로만)
+    hill(m,18,2,20,9,[27,28]);fillG(m,19,13,19,5,4);fillG(m,19,20,19,5,4);
+    H({x:24,w:8,h:3,door:9,roof:4,name:'황궁',big:true,spr:'mansion',path:0});
+    for(const x of [20,35])prop(m,'statue',x,5);for(const x of [21,34])prop(m,'lamp',x,8);m.objs.push({t:'flowers',x:23,y:8,base:9*T-8,seed:3});m.objs.push({t:'flowers',x:32,y:8,base:9*T-8,seed:5});
+    m.soldiers=[[26,13,'warrior_blue',1],[29,13,'warrior_blue',-1],[42,17,'warrior_yellow',1],[48,17,'warrior_yellow',-1],[42,28,'warrior_yellow',1]];
+    // 광장
+    prop(m,'fountain',27,21);prop(m,'statue',21,15);prop(m,'statue',35,15);for(const x of [20,36])prop(m,'lamp',x,22);
+    stall(m,22,22,'#8a3ab8');stall(m,32,22,'#d04a3a');bench(m,23,15);bench(m,30,15);bed(m,19,24,3,1);bed(m,35,24,3,4);
+    // 시가지 집들
+    H({x:1,w:4,h:2,door:17,roof:0,act:'guild',name:'황성 의뢰소',sign:D.I(18,9)});H({x:6,w:4,h:1,door:17,roof:1,act:'shop',name:'귀족 상점',sign:D.I(7,3)});
+    H({x:11,w:4,h:2,door:17,roof:4,act:'inn',name:'황성 여관',sign:D.I(8,10)});const sm=H({x:38,w:4,h:1,door:17,roof:2,act:'smith',name:'왕실 대장간',sign:D.I(7,13)});sm.smoke=true;prop(m,'anvil',41,17);
+    for(const [x,r] of [[1,2],[6,3],[11,0]])H({x,w:4,h:1,door:11,roof:r,name:'귀족 저택'});
+    for(const [x,r] of [[1,1],[6,4],[11,2]])H({x,w:4,h:1,door:6,roof:r,name:'민가'});
+    H({x:38,w:4,h:1,door:6,roof:3,name:'귀족 저택'});H({x:38,w:4,h:1,door:11,roof:1,name:'귀족 저택'});
+    for(const [x,r] of [[1,3],[5,0],[9,2],[13,4],[17,1],[21,3],[31,0],[35,2],[39,4]])H({x,w:4,h:1,door:26,roof:r,name:'민가'});
+    H({x:2,w:4,h:2,door:34,roof:0,act:'hq',name:'메인 길드 본부',sign:D.I(2,10)});H({x:8,w:4,h:1,door:34,roof:4,act:'relic',name:'유물 상점',sign:D.I(10,6)});
+    H({x:14,w:4,h:2,door:34,roof:3,act:'classhall',name:'전직의 전당',sign:D.I(91,9)});for(const [x,r] of [[19,1],[30,2],[34,0],[38,3]])H({x,w:4,h:1,door:34,roof:r,name:'민가'});
+    // 투기장
+    fillG(m,6,38,20,3,3);stoneRing(m,5,37,22,5,[15,16]);road(m,15,36,2,1);
+    for(const [x,y] of [[7,39],[24,39]])prop(m,'barrel',x,y);m.objs.push({t:'statue2',x:10,y:38,base:40*T,act:'arena',name:'왕실 투기장'});block(m,10,38,2,2);m.objs.push({t:'statue2',x:20,y:38,base:40*T,act:'arena',name:'왕실 투기장'});block(m,20,38,2,2);
+    m.labels.push({x:16,y:38.4,n:'왕실 투기장',act:'arena'});
+    // 동쪽: 근위대 병영 + 훈련장
+    H({x:48,w:4,h:2,door:17,roof:3,name:'근위대 병영'});H({x:53,w:4,h:2,door:17,roof:0,name:'근위대 병영'});H({x:58,w:4,h:1,door:17,roof:4,name:'무기고'});
+    fenceBox(m,48,21,15,8,'t',55);fillG(m,49,22,13,6,3);road(m,55,20,1,1);
+    for(let r=0;r<3;r++)for(let c=0;c<3;c++)m.soldiers.push([50+c*2,23+r*2,'warrior_blue',1,true]);
+    m.soldiers.push([57,25,'warrior_yellow',-1]);for(const y of [23,25,27])m.soldiers.push([58,y,'archer_blue',1,true]);for(const y of [23,25,27]){m.objs.push({t:'dummy',x:61,y,base:(y+1)*T});block(m,61,y,1,1);}
+    m.labels.push({x:55,y:21.4,n:'근위대 훈련장'});
+    for(const [x,r] of [[48,2],[53,0],[58,1]])H({x,w:4,h:1,door:34,roof:r,name:'민가'});road(m,47,35,16,1);road(m,47,28,1,7);
+    treeBorder(m,[[0,18,1],[63,18,1],[27,43,2]]);m.spawn={x:1,y:18};m.exits=[{x:0,y:18,to:'world',n:'월드맵'},{x:63,y:18,to:'world',n:'월드맵'},{x:27,y:43,to:'world',n:'월드맵'}];}
   organicRoads(m,{t1:.7,t2:.9,t3:1.2,t4:1.4}[tk]);dress(m,{t1:.9,t2:.7,t3:.6,t4:.5}[tk]);
   m.title=t.n+' · '+t.tag;m.town=tk;return m;}
 // 마을 꾸미기: 집마다 작은 마당 + 빈 풀밭에 나무 무리·덤불·바위·꽃
@@ -477,7 +529,15 @@ function paintGround(m){const c=document.createElement('canvas');c.width=m.w*T;c
       if(h%3===0){x.fillStyle='rgba(255,255,255,.35)';x.fillRect(dx+(h%9)+2,dy+(h%7)+4,4,1);}}
     else if(g===3){tile(...[[5,1],[7,1],[8,1],[9,1]][h%4],dx,dy);}
     else if(g===5){x.fillStyle=PAL.soil;x.fillRect(dx,dy,T,T);x.fillStyle='#7a4230';for(let r=2;r<T;r+=5)x.fillRect(dx,dy+r,T,1);}
-    else if(g===6){x.fillStyle=PAL.plank;x.fillRect(dx,dy,T,T);x.fillStyle=PAL.plankD;for(let r=0;r<T;r+=4)x.fillRect(dx,dy+r,T,1);x.fillRect(dx+((j%2)?4:11),dy,1,T);}}
+    else if(g===8||g===12){const p=GR[h%GR.length];tile(p[0],p[1],dx,dy);}
+    else if(g===9||g===10){const up=m.g[gi(m,i,j-1)];const top=up===8||up===12||(up===10&&g===9);x.drawImage(ts,176+((i%2)*0),64+((j%2)*16),16,16,dx,dy,16,16);
+      x.fillStyle='rgba(60,30,20,.25)';x.fillRect(dx,dy+T-2,T,2);
+      if(top){x.fillStyle='#3e8a3a';x.fillRect(dx,dy,T,3);x.fillStyle='#8a3a28';x.fillRect(dx,dy+3,T,1);for(let k=0;k<4;k++){x.fillStyle='#3e8a3a';x.fillRect(dx+((h>>k)%14),dy+3,2,2);}}
+      if(g===10){x.drawImage(ts,144,176,16,16,dx,dy,16,16);}}
+    else if(g===11||g===13){x.fillStyle='#3fbbe6';x.fillRect(dx,dy,T,T);const bi=IMG.t_bridges;
+      if(bi&&g===11){const top=m.g[gi(m,i,j-1)]!==11;x.drawImage(bi,310+(i%4)*16,top?356:372,16,16,dx,dy,16,16);}
+      else if(bi){const left=m.g[gi(m,i-1,j)]!==13;x.drawImage(bi,left?222:238,350+(j%5)*16,16,16,dx,dy,16,16);}}
+    else if(g===6){const bi=IMG.t_bridges;if(bi){x.drawImage(bi,230,350+(j%5)*16,16,16,dx,dy,16,16);}else{x.fillStyle=PAL.plank;x.fillRect(dx,dy,T,T);}}}
   // 가장자리 (길·물 테두리)
   for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++){const g=m.g[gi(m,i,j)],dx=i*T,dy=j*T;const nb=(a,b)=>(a<0||b<0||a>=m.w||b>=m.h)?g:m.g[gi(m,a,b)];
     const isP=v=>v===1||v===4;
@@ -492,7 +552,11 @@ function paintGround(m){const c=document.createElement('canvas');c.width=m.w*T;c
         if(hh%5===0){x.fillStyle='#b58a66';x.fillRect(dx+(hh%10)+3,dy+((hh>>4)%9)+4,3,2);x.fillStyle='#e8c8a0';x.fillRect(dx+(hh%10)+3,dy+((hh>>4)%9)+4,2,1);}}
       x.fillStyle=PAL.grass;const n=nb(i,j-1)===0,s=nb(i,j+1)===0,w=nb(i-1,j)===0,e=nb(i+1,j)===0;
       if(n&&w)x.fillRect(dx,dy,2,2);if(n&&e)x.fillRect(dx+T-2,dy,2,2);if(s&&w)x.fillRect(dx,dy+T-2,2,2);if(s&&e)x.fillRect(dx+T-2,dy+T-2,2,2);}
-    if(g===2||g===7){const wt=v=>v===2||v===7||v===6;
+    if(g===12||g===8){const out=v=>!(v===8||v===12||v===10);x.fillStyle='#2f6e34';if(out(nb(i-1,j)))x.fillRect(dx,dy,2,T);if(out(nb(i+1,j)))x.fillRect(dx+T-2,dy,2,T);if(out(nb(i,j-1)))x.fillRect(dx,dy,T,2);
+      x.fillStyle='rgba(255,255,255,.08)';x.fillRect(dx,dy,T,T);}
+    if(g===0&&(nb(i,j-1)===9||nb(i,j-1)===10)){x.fillStyle='rgba(0,0,0,.18)';x.fillRect(dx,dy,T,4);}
+    if(g===6){const bi=IMG.t_bridges;if(bi){if(nb(i-1,j)!==6)x.drawImage(bi,226,342,6,16,dx-2,dy,6,16);if(nb(i+1,j)!==6)x.drawImage(bi,247,342,6,16,dx+T-4,dy,6,16);}}
+    if(g===2||g===7){const wt=v=>v===2||v===7||v===6||v===11||v===13;
       if(!wt(nb(i,j-1))){x.fillStyle='#8a6a48';x.fillRect(dx,dy,T,3);x.fillStyle='#24849f';x.fillRect(dx,dy+3,T,3);x.fillStyle='rgba(255,255,255,.75)';x.fillRect(dx,dy+6,T,1);}
       if(!wt(nb(i-1,j))){x.fillStyle='#b8e8f8';x.fillRect(dx,dy,1,T);x.fillStyle='rgba(30,110,150,.5)';x.fillRect(dx+1,dy,2,T);}
       if(!wt(nb(i+1,j))){x.fillStyle='#b8e8f8';x.fillRect(dx+T-1,dy,1,T);}
@@ -517,7 +581,7 @@ function findPath(m,sx,sy,tx,ty){if(isBlocked(m,tx,ty)){let best=null,bd=1e9;for
 
 /* ----- 걷는 장면: 입장 · 주민 ----- */
 let userZoom=1;
-function enterWalk(loc,spawnAt){if(ED&&loc!=='camp'){ED=null;$('edBar').classList.add('hidden');}const s=S();s.loc=loc;MAP=loc==='camp'?buildCamp():buildTown(loc);paintGround(MAP);
+function enterWalk(loc,spawnAt){if(ED&&loc!=='camp'){ED=null;$('edBar').classList.add('hidden');document.body.classList.remove('editing');}const s=S();s.loc=loc;MAP=loc==='camp'?buildCamp():buildTown(loc);paintGround(MAP);
   const sp=spawnAt||MAP.spawn;player={x:(sp.x+.5)*T,y:(sp.y+.5)*T,path:[],t:0,anim:'idle',face:1,desc:unitDesc(s.leader),name:s.leader.name,kind:'player'};
   MAP.npcs=[];if(loc==='camp')populateCamp();else populateTown(loc);
   cam.x=player.x;cam.y=player.y;scene='walk';sceneT=0;showWalkUI();G.save();}
@@ -531,13 +595,15 @@ function populateCamp(){const s=S(),m=MAP,B=s.camp.built;
     const [x,y]=freeTileNear(pos[0],pos[1],1);const w=walker(unitDesc(mc),x,y,{kind:'merc',ref:mc,name:mc.name});if(mc.status==='inj'||mc.dis)w.speed*=.6;m.npcs.push(w);}
   const vis=[0,0,5,12,20][s.camp.tier];for(let i=0;i<vis;i++){const look={o:pick([0,1,2,3,6,7,8,9]),hair:pick(D.HAIRS),hc:ri(0,6)};const [x,y]=freeTileNear(18,20,8);
     m.npcs.push(walker({kind:'human',look,tool:false},x,y,{kind:'visitor',name:pick(['행상인','주민','여행자','농부','상인'])}));}}
-const TOWN_NPC_SPOTS={t1:[[24,13],[10,13],[14,18]],t2:[[30,14],[14,14],[8,21]],t3:[[16,20],[30,12],[24,16]],t4:[[18,17],[44,17],[34,26]]};
+const TOWN_NPC_SPOTS={t1:[[24,13],[10,13],[14,18]],t2:[[30,15],[10,15],[8,27]],t3:[[16,20],[30,12],[24,16]],t4:[[10,19],[24,16],[34,27]]};
 function populateTown(tk){const m=MAP,t=D.TOWNS[tk];const n=[0,6,10,15,22][t.tier];
-  const roads=[];for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++){const g=m.g[gi(m,i,j)];if((g===1||g===4||g===6)&&!m.blk[gi(m,i,j)])roads.push([i,j]);}
+  const roads=[];for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++){const g=m.g[gi(m,i,j)];if((g===1||g===4||g===6||g===11||g===13)&&!m.blk[gi(m,i,j)])roads.push([i,j]);}
   m.roads=roads;
   for(let i=0;i<n;i++){const role=i<Math.max(2,n*.2)?'guard':i<n*.35?'merchant':'folk';
     const look={o:role==='guard'?4:role==='merchant'?pick([7,8]):pick([0,1,2,3,6,7,9]),hair:pick(D.HAIRS),hc:ri(0,6)};const [x,y]=pick(roads);
-    m.npcs.push(walker({kind:'human',look,tool:role==='guard'},x,y,{kind:'npc',role,name:role==='guard'?'경비병':role==='merchant'?'상인':'주민',speed:role==='guard'?28:rnd(30,44)}));}
+    const desc=role==='guard'&&tk==='t4'?{kind:'tsu',k:pick(['warrior_blue','warrior_yellow'])}:{kind:'human',look,tool:role==='guard'};
+    m.npcs.push(walker(desc,x,y,{kind:'npc',role,name:role==='guard'?(tk==='t4'?'황실 근위병':'경비병'):role==='merchant'?'상인':'주민',speed:role==='guard'?28:rnd(30,44)}));}
+  for(const [x,y,k,face,drill] of m.soldiers||[])m.npcs.push(walker({kind:'tsu',k},x,y,{kind:'npc',role:'guard',name:'황실 근위병',still:true,face,drill:!!drill}));
   // 서브 퀘스트 의뢰인 (제자리)
   const spots=TOWN_NPC_SPOTS[tk];let k=0;
   for(const id in D.SUBS){const q=D.SUBS[id];if(q.town!==tk)continue;const sp=spots[k++];if(!sp)break;
@@ -645,13 +711,15 @@ function drawObj(c,o){const t=walkT;
   case 'sign':{c.drawImage(IMG.t_ss16,624,256,16,16,o.x*T,o.y*T,16,16);break;}
   case 'mine':{const im=IMG.t_goldmine;if(im)c.drawImage(im,0,0,192,128,(o.x+1.5)*T-48,(o.y+3)*T-61,96,64);break;}
   case 'cliff':{const im=IMG.w_mount;if(!im)break;const R=[[9,15,81,68],[105,15,81,69]];for(let i=-1;i*60<o.w*T;i++){const r=R[(i+5)%2];c.drawImage(im,r[0],r[1],r[2],r[3],i*60-10,-6+((i%3)*6),r[2],r[3]);}break;}
+  case 'furnace':{const im=IMG.t_ss16;c.drawImage(im,624,272,32,32,o.x*T,o.y*T,32,32);const fi=IMG.el_fire;if(fi){const n=Math.max(1,Math.round(fi.width/fi.height)),fw=fi.width/n,f=Math.floor(walkT*8)%n;c.drawImage(fi,f*fw,0,fw,fi.height,o.x*T+10,o.y*T+20,fw,fi.height);c.globalAlpha=1;}break;}
+  case 'trough':{c.drawImage(IMG.t_ss16,596,272,32,16,o.x*T,o.y*T,32,16);break;}
   case 'rail':{c.drawImage(IMG.t_ss16,768,128,16,16,o.x*T,o.y*T,16,16);break;}
   case 'cart':{c.drawImage(IMG.t_ss16,704,104,16,18,o.x*T,o.y*T-4,16,18);break;}
   case 'arena':{const x=o.x*T,y=o.y*T,w=o.w*T,h=o.h*T;c.fillStyle='#e4d08a';c.beginPath();c.ellipse(x+w/2,y+h/2,w/2-6,h/2-6,0,0,Math.PI*2);c.fill();c.strokeStyle='#8a867e';c.lineWidth=6;c.stroke();c.strokeStyle='#b8b4ac';c.lineWidth=2;c.stroke();
     for(let i=0;i<8;i++){const a=i/8*Math.PI*2;const bx=x+w/2+Math.cos(a)*(w/2-4),by=y+h/2+Math.sin(a)*(h/2-4);c.fillStyle='#5a3420';c.fillRect(bx,by-14,2,14);c.fillStyle=i%2?'#a8282a':'#2a5aa8';c.fillRect(bx+2,by-14,7,5);}break;}
   }}
 function drawWalker(c,e){shadow(c,e.x,e.y+1,6);
-  let flash=0;drawAny(c,e.desc,e.anim,e.t,e.x,e.y+1,1,e.face<0,{flash});
+  let flash=0;if(e.drill){drawAny(c,e.desc,'attack',walkT*.9,e.x,e.y+1,1,e.face<0,{flash});return;}drawAny(c,e.desc,e.anim,e.t,e.x,e.y+1,1,e.face<0,{flash});
   if(e.kind==='merc'&&e.ref.status==='inj'){c.fillStyle='#fff';c.fillRect(e.x-4,e.y-15,8,2);c.fillStyle='#d03030';c.fillRect(e.x-1,e.y-16,2,4);}}
 function renderWalk(){const m=MAP;if(!m||!m.bg)return;const z=cam.z;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#2f5a2a';ctx.fillRect(0,0,W,H);
@@ -872,7 +940,7 @@ function enterDungeon(){const r=S().run;const d=D.DUNG[r.dk];const dg=G.genDunge
     if(rm.t==='shop'){const look={o:7,hair:'longhair',hc:4};m.npcs.push(walker({kind:'human',look,tool:false},cx,cy,{kind:'merchant',name:'떠돌이 상인',still:true,room:rm.id}));m.lit.push([cx*T+8,cy*T,70]);}
     if((rm.t==='battle'||rm.t==='elite'||rm.t==='boss')&&!r.cleared[rm.id]){const en=G.genEnemies(r.dk,{t:rm.t,l:rm.l});const lead=en[0];
       const mob={kind:'mob',room:rm,en,desc:sprDesc(lead.spr,lead.tint),name:lead.name+(en.length>1?' 외 '+(en.length-1):''),x:(cx+.5)*T,y:(cy+.5)*T,hx:(cx+.5)*T,hy:(cy+.5)*T,t:Math.random()*3,face:-1,anim:'idle',wait:rnd(1,3),path:[],speed:22,
-        sc:rm.t==='boss'?(lead.spr.startsWith('b_')?.8:1.5)*(lead.scale||1):rm.t==='elite'?1.3:1,boss:rm.t==='boss',elite:rm.t==='elite'};m.mobs.push(mob);
+        sc:rm.t==='boss'?(lead.spr.startsWith('b_')?.7:1.25)*(lead.scale||1):rm.t==='elite'?1.3:1,boss:rm.t==='boss',elite:rm.t==='elite'};m.mobs.push(mob);
       if(rm.t==='boss')m.objs.push({t:'dflag',x:rm.x+1,y:rm.y-1,base:rm.y*T},{t:'dflag',x:rm.x+rm.w-2,y:rm.y-1,base:rm.y*T});}}
   // 함정
   m.traps=dg.traps.map(tp=>Object.assign({},tp,{st:r.trapSt[tp.id]||0,checked:!!r.trapSt[tp.id]}));for(const tp of m.traps)if(tp.st===1)m.blk[at(tp.x,tp.y)]=1;
@@ -1189,7 +1257,7 @@ function nextLine(){const l=dlgQ.shift();if(!l){$('dlg').classList.add('hidden')
 $('dlg').onclick=()=>{sfx('click',.15);nextLine();};
 function hash(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h;}
 const FACES_N={'접수원 메이':'Woman','촌장 오드릭':'OldMan','사냥꾼 리아':'Hunter','산적 두목 바르크':'FighterRed','길드장 볼드':'Master','광부 토비':'Caveman','옛 부관 가렛':'Knight','항구 관리관 니나':'Noble','밀수단 두목 렉스':'NinjaMasked','황성 경비병':'SamuraiBlue','황성 의뢰소 직원':'Inspector','황제 레오나르트':'Sultan','길드 마스터 아이언':'KnightGold','배신자 발테르':'SorcererBlack','농부 베니':'Villager','꽃집 아이 루루':'Child','대장장이 한나':'Cavegirl','목수 바드':'Villager2','진주 상인 마린':'Villager5','늙은 선원 펠':'OldMan2','학자 이브':'Shaman','귀족 영애 엘리제':'Princess','근위대장 로웰':'SamuraiRed','떠돌이 시인 안톤':'Villager3'};
-const FACES_K=[['의뢰소','Woman'],['접수','Woman'],['여관','Villager4'],['대장장이','Caveman'],['상인','Villager6'],['경비','SamuraiBlue'],['교관','FighterWhite'],['관리인','Inspector'],['할머니','OldWoman'],['노인','OldMan2']];
+const FACES_K=[['근위','Knight'],['의뢰소','Woman'],['접수','Woman'],['여관','Villager4'],['대장장이','Caveman'],['상인','Villager6'],['경비','SamuraiBlue'],['교관','FighterWhite'],['관리인','Inspector'],['할머니','OldWoman'],['노인','OldMan2']];
 function faceFor(name){if(name==='나레이션')return null;if(name===S()?.leader?.name)return unitDesc(S().leader);
   if(FACES_N[name])return {kind:'face',k:FACES_N[name]};for(const [w,k] of FACES_K)if(name.includes(w))return {kind:'face',k};
   if(name.includes('발테르'))return {kind:'face',k:'SorcererBlack'};if(name.includes('가렛'))return {kind:'face',k:'Knight'};
