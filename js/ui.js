@@ -36,7 +36,7 @@ for(const k of ['warrior_blue','warrior_yellow','archer_blue'])LIST.push(['ts_'+
 for(const k of ['nobleman','noblewoman','oldman','oldwoman','peasant','princess','queen','villagerman','villagerwoman','worker'])LIST.push(['mf_'+k,'assets/mf/'+k+'.png']);
 for(const k of ['Desert','Field','Floor','House','Nature','Water','Element'])LIST.push(['nj_'+k.toLowerCase(),'assets/nj/Tileset'+k+'.png']);
 for(const k of ['boy','cavegirl','child','egggirl','eskimo','hunter','inspector','knight','knightgold','lionboy','mangreen','master','monk','monk2','ninjablue','ninjaeskimo','ninjagray','ninjared','noble','oldman','oldman2','oldwoman','princess','samurai','samuraiblue','shaman','villager','villager2','villager3','woman'])LIST.push(['njc_'+k,'assets/nj/ch/'+k+'.png']);
-LIST.push(['nj_ifloor','assets/nj/TilesetInteriorFloor.png']);for(const k of ['ripple','flower','mill','flag'])LIST.push(['nj_'+k,'assets/nj/'+k+'.png']);LIST.push(['ui_up','assets/ui/arrow_up.png'],['fan_gate','assets/fan/citygate.png'],['fan_banner','assets/fan/banner_purple.png']);LIST.push(['nj_boat','assets/nj/veh/boat.png'],['nj_sail','assets/nj/veh/Sail.png'],['nj_net','assets/nj/veh/FishNet.png']);LIST.push(['nj_vil','assets/nj/TilesetVillageAbandoned.png']);for(const [k,f] of [['nj_fdet','TilesetFloorDetail'],['nj_floorb','TilesetFloorB'],['nj_relief','TilesetRelief'],['nj_reliefd','TilesetReliefDetail']])LIST.push([k,'assets/nj/'+f+'.png']);
+LIST.push(['nj_ifloor','assets/nj/TilesetInteriorFloor.png'],['nj_leaf','assets/nj/house_leaf.png']);for(const k of ['ripple','flower','mill','flag'])LIST.push(['nj_'+k,'assets/nj/'+k+'.png']);LIST.push(['ui_up','assets/ui/arrow_up.png'],['fan_gate','assets/fan/citygate.png'],['fan_banner','assets/fan/banner_purple.png']);LIST.push(['nj_boat','assets/nj/veh/boat.png'],['nj_sail','assets/nj/veh/Sail.png'],['nj_net','assets/nj/veh/FishNet.png']);LIST.push(['nj_vil','assets/nj/TilesetVillageAbandoned.png']);for(const [k,f] of [['nj_fdet','TilesetFloorDetail'],['nj_floorb','TilesetFloorB'],['nj_relief','TilesetRelief'],['nj_reliefd','TilesetReliefDetail']])LIST.push([k,'assets/nj/'+f+'.png']);
 LIST.push(['t_int','assets/tiles/interior.png'],['t_furn','assets/tiles/furniture.png']);
 LIST.push(['t_bridges','assets/tiles/bridges.png'],['el_mf_bunny','assets/ss/el/mf_bunny.png'],['el_mf_deer','assets/ss/el/mf_deer.png'],['el_coracle','assets/ss/el/coracle.png'],['t_goldmine','assets/tiles/goldmine.png'],['dg_dtiles','assets/dg/dtiles.png'],['el_crate_base','assets/ss/el/crate_base.png'],['el_crate_top','assets/ss/el/crate_top.png'],['dg_props','assets/dg/props.png'],['w_tiles','assets/world/tileset.png'],['w_mount','assets/world/mountains.png'],['w_water','assets/world/water.png']);
 for(const k of ['gable','blue2','red','mansion','flat'])for(let r=0;r<5;r++)LIST.push(['bld_'+k+'_'+r,'assets/bld/'+k+'_'+r+'.png']);
@@ -300,8 +300,8 @@ function pen(m,x,y,w,h,kinds,gate){const [gx,gy]=fenceBox(m,x,y,w,h,gate||'t');p
 // 밭: 갈아 놓은 흙 + 작물 줄 + 가운데 고랑길 + 울타리(문은 길 쪽)
 function farm(m,x,y,w,h,gate){const gx=x+Math.floor(w/2);fenceBox(m,x,y,w,h,gate||'t',gx);
   fillG(m,x+1,y+1,w-2,h-2,5);fillG(m,gx,y+1,1,h-2,1);
-  for(let j=y+1;j<y+h-1;j++){for(let i=x+1;i+1<gx;i+=2){m.objs.push({t:'crop',x:i,y:j,base:(j+1)*T-4,seed:i*3+j,act:'crop'});block(m,i,j,2,1);}
-    for(let i=gx+1;i+1<x+w-1;i+=2){m.objs.push({t:'crop',x:i,y:j,base:(j+1)*T-4,seed:i*3+j,act:'crop'});block(m,i,j,2,1);}}
+  for(let j=y+1;j<y+h-1;j++){for(let i=x+1;i+1<gx;i+=2){m.objs.push({t:'crop',x:i,y:j,base:(j+1)*T-4,seed:i*3+j,act:'crop'});}
+    for(let i=gx+1;i+1<x+w-1;i+=2){m.objs.push({t:'crop',x:i,y:j,base:(j+1)*T-4,seed:i*3+j,act:'crop'});}}
   return [gx,gate==='b'?y+h-1:y];}
 // 길 가장자리를 들쭉날쭉하게 (일자 도로 방지)
 function organicRoads(m,amt){const add=[];const h=(i,j)=>((i*374761393+j*668265263+m.w*97)^(m.h*7919))>>>0;
@@ -521,7 +521,7 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     // 큰길 북쪽 상점가
     VH({x:9,r:VA.hut,door:16,act:'relic',name:'정령 유물점'});VH({x:13,r:VA.hut2,door:16,act:'smith',name:'엘프 활 공방'});
     VH({x:23,r:VA.tall,door:16,act:'guild',name:'숲의 의뢰소'});VH({x:28,r:VA.hut,door:16,act:'shop',name:'요정 가루 상점'});
-    njHouse(m,{x:36,r:NJ.longhouse,door:16,act:'inn',name:'잎사귀 여관',im:'nj_house'});
+    njHouse(m,{x:36,r:[0,0,64,72],door:16,act:'inn',name:'잎사귀 여관',im:'nj_leaf'});
     // 북서: 숲지기 마을 (나무 위 집)
     njo(m,'nj_vil',VA.thatch,2,9,4,2);m.labels.push({x:4,y:3.4,n:'🍃 장로의 거처'});VH({x:16,r:VA.hut,door:9,name:'숲지기의 집'});njo(m,'nj_vil',VA.treehouse,8,8,3,1);m.labels.push({x:9.5,y:3.3,n:'🌿 나무 위 집'});
     // 북동: 세계수 제단 (큰 나무 + 선돌)
@@ -1201,7 +1201,7 @@ function hitWalk(px,py){const [wx,wy]=screenToWorld(px,py);const m=MAP;
 function walkTap(px,py){if(uiBusy())return;if(edOn()){edTap(px,py);return;}const h=hitWalk(px,py);const m=MAP;const sx=Math.floor(player.x/T),sy=Math.floor(player.y/T);
   if(h.pet){if(Math.hypot(h.pet.x-player.x,h.pet.y-player.y)<T*4){petPanel(h.pet);return;}const p=findPath(m,sx,sy,Math.floor(h.pet.x/T),Math.floor(h.pet.y/T));if(p){p.shift();if(p.length)p.pop();player.path=p;}return;}
   if(h.npc){const e=h.npc;if(Math.hypot(e.x-player.x,e.y-player.y)<T*(m.inside?3.4:2.2)){player.path=[];player.goal=null;interact({npc:e});return;}const p=findPath(m,sx,sy,Math.floor(e.x/T),Math.floor(e.y/T));player.goal={npc:e};if(p){p.shift();if(p.length)p.pop();player.path=p;}if(!player.path.length){player.goal=null;interact({npc:e});}return;}
-  if(h.obj){const o=h.obj;let tx,ty;if(o.t==='house'){tx=o.dx;ty=o.dy+1;}else if(o.t==='plot'){tx=o.x+Math.floor(o.w/2);ty=o.y+o.h;}else if(o.t==='arena'){tx=o.x+o.w/2|0;ty=o.y-1;}else if(o.t==='mine'){tx=o.x+2;ty=o.y+3;}else{tx=o.x;ty=o.y+1;}
+  if(h.obj){const o=h.obj;let tx,ty;if(o.t==='house'){tx=o.dx;ty=o.dy+1;}else if(o.t==='plot'){tx=o.x+Math.floor(o.w/2);ty=o.y+o.h;}else if(o.t==='arena'){tx=o.x+o.w/2|0;ty=o.y-1;}else if(o.t==='mine'){tx=o.x+2;ty=o.y+3;}else if(o.t==='crop'||o.t==='forage'||o.t==='dig'||o.ck){tx=o.x;ty=o.y;}else{tx=o.x;ty=o.y+1;}
     const p=findPath(m,sx,sy,tx,ty);player.goal={obj:o};if(p){p.shift();player.path=p;}if(!player.path.length){player.goal=null;interact({obj:o});}return;}
   const [tx,ty]=h.tile;const p=findPath(m,sx,sy,tx,ty);if(p){p.shift();player.path=p;player.goal=null;sfx('step',.15,120);}}
 function interact(g){if(g.npc){const e=g.npc;e.face=player.x<e.x?-1:1;player.face=e.x>player.x?1:-1;
