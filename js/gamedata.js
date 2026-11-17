@@ -38,24 +38,24 @@ const GRADES=[
   {n:'영웅',c:'#c07aff',m:1.38,w:2.1}
 ];
 const POTENTIAL=[{n:'평범',m:1,c:'#bbb'},{n:'우수',m:1.15,c:'#8fd0ff'},{n:'천재',m:1.32,c:'#ffd166'}];
-const wageOf=(L,g)=>Math.round(45*Math.pow(1.158,L-1)*GRADES[g].w/5)*5;
+const wageOf=(L,g)=>Math.round(45*Math.pow(1.158,Math.min(L,34)-1)*Math.pow(1.06,Math.max(0,L-34))*GRADES[g].w/5)*5;
 
 /* ---------- 직업 ---------- */
 // row: front(전열) / back(후열). wpn: 장착 가능한 무기 분류
 const JOBS={
-  warrior:{n:'검사',row:'front',wpn:['sword','axe'],outfit:0,tool:true,
+  warrior:{n:'검사',row:'front',wpn:['sword','axe','dagger'],outfit:0,tool:true,
     b:{hp:110,atk:14,mag:4,def:8,spd:30,crit:6,eva:4},g:{hp:18,atk:3.0,mag:.4,def:1.6,spd:.22},
     skill:'whirl',atkType:'slash',desc:'전열 근접 딜러. 앞의 적 둘을 휩쓴다'},
-  guard:{n:'방패병',row:'front',wpn:['sword','mace'],outfit:4,tool:true,
+  guard:{n:'방패병',row:'front',wpn:['sword','mace','axe'],outfit:4,tool:true,
     b:{hp:145,atk:10,mag:3,def:12,spd:26,crit:3,eva:2},g:{hp:24,atk:2.2,mag:.3,def:2.4,spd:.18},
     skill:'taunt',atkType:'slash',desc:'단단한 벽. 적의 공격을 끌어온다'},
-  archer:{n:'궁수',row:'back',wpn:['bow'],outfit:2,tool:false,
+  archer:{n:'궁수',row:'back',wpn:['bow','dagger'],outfit:2,tool:false,
     b:{hp:85,atk:15,mag:4,def:5,spd:34,crit:10,eva:7},g:{hp:13,atk:3.2,mag:.4,def:1.0,spd:.3},
     skill:'volley',atkType:'bow',desc:'후열 원거리. 빠르고 치명타가 잦다'},
-  mage:{n:'마도사',row:'back',wpn:['staff'],outfit:1,tool:false,
+  mage:{n:'마도사',row:'back',wpn:['staff','dagger'],outfit:1,tool:false,
     b:{hp:75,atk:5,mag:17,def:4,spd:28,crit:5,eva:4},g:{hp:11,atk:.6,mag:3.5,def:.9,spd:.24},
     skill:'fireball',atkType:'magic',desc:'후열 광역 마법. 몸이 약하다'},
-  priest:{n:'사제',row:'back',wpn:['staff'],outfit:6,tool:false,
+  priest:{n:'사제',row:'back',wpn:['staff','mace'],outfit:6,tool:false,
     b:{hp:85,atk:5,mag:14,def:6,spd:29,crit:4,eva:4},g:{hp:13,atk:.5,mag:2.8,def:1.2,spd:.24},
     skill:'prayer',atkType:'magic',heal:true,desc:'치유 담당. 다친 동료를 먼저 돌본다'}
 };
@@ -65,12 +65,12 @@ const JOB_KEYS=Object.keys(JOBS);
 const LCLASS={
   sword:{n:'용병 검사',row:'front',wpn:['sword','axe','mace'],main:'STR',outfit:0,tool:true,atkType:'slash',skills:['smash','warcry'],adv:['berserker','guardian'],desc:'근접 밸런스형. 힘이 주력'},
   bow:{n:'정찰 궁수',row:'back',wpn:['bow','dagger'],main:'AGI',outfit:7,tool:false,atkType:'bow',skills:['aimshot','binding'],adv:['assassin','sniper'],desc:'원거리·속도형. 민첩이 주력'},
-  mage:{n:'전투 마도사',row:'back',wpn:['staff'],main:'INT',outfit:3,tool:false,atkType:'magic',skills:['blast','frostlance'],adv:['archmage','warlord'],desc:'광역·지력형. 지력이 주력'},
+  mage:{n:'전투 마도사',row:'back',wpn:['staff','dagger'],main:'INT',outfit:3,tool:false,atkType:'magic',skills:['blast','frostlance'],adv:['archmage','warlord'],desc:'광역·지력형. 지력이 주력'},
   berserker:{n:'광전사',base:'sword',row:'front',wpn:['sword','axe','mace'],outfit:5,tool:true,atkType:'slash',skills:['smash','warcry','frenzy'],passive:'bloodthirst',desc:'HP가 낮을수록 공격력·흡혈 폭증 (피의 갈증)'},
   guardian:{n:'수호 기사',base:'sword',row:'front',wpn:['sword','mace'],outfit:4,tool:true,atkType:'slash',skills:['smash','warcry','phalanx'],passive:'bulwark',desc:'적 도발과 아군 전체 보호막 (철벽 방진)'},
   assassin:{n:'그림자 암살자',base:'bow',row:'front',wpn:['dagger','bow'],outfit:5,tool:true,atkType:'slash',skills:['aimshot','binding','vital'],passive:'shadow',desc:'보스·후열 즉결 처형 (급소 찌르기)'},
-  sniper:{n:'명사수',base:'bow',row:'back',wpn:['bow'],outfit:2,tool:false,atkType:'bow',skills:['aimshot','binding','pierce'],passive:'eagle',desc:'관통 사격·시전 차단·방어력 감소 (관통 화살)'},
-  archmage:{n:'원소 대마도사',base:'mage',row:'back',wpn:['staff'],outfit:3,tool:false,atkType:'magic',skills:['blast','frostlance','meteor'],passive:'element',desc:'적 전체 초고화력 폭격 (메테오)'},
+  sniper:{n:'명사수',base:'bow',row:'back',wpn:['bow','dagger'],outfit:2,tool:false,atkType:'bow',skills:['aimshot','binding','pierce'],passive:'eagle',desc:'관통 사격·시전 차단·방어력 감소 (관통 화살)'},
+  archmage:{n:'원소 대마도사',base:'mage',row:'back',wpn:['staff','dagger'],outfit:3,tool:false,atkType:'magic',skills:['blast','frostlance','meteor'],passive:'element',desc:'적 전체 초고화력 폭격 (메테오)'},
   warlord:{n:'군단 지휘관',base:'mage',row:'back',wpn:['staff','sword'],outfit:8,tool:false,atkType:'magic',skills:['blast','frostlance','command'],passive:'tactics',desc:'아군 공속·스킬 충전 2배 (총공격 명령)'}
 };
 const PASSIVE={
@@ -922,6 +922,22 @@ const CQ={
   {id:'m4_13',ch:4,n:'텐구가 훔친 지도',type:'clear',d:'d_maple',goal:'단풍 대숲의 「붉은 단풍 텐구」 처치',
    done:[['나레이션','텐구의 둥지에서 낡은 지도가 나왔다. 뒷면에 칼끝으로 쓴 글이 있었다.'],['지도 뒷면 — 아르칸','「내 아이에게. 네가 깃발을 들었다면, 천년설 봉우리로 와라. 하지만 먼저 서방에서 이름을 되찾아라.」'],g]});}
 
+
+// ===== v1.8 황성 고위직 전용 대사 (태도 0 낯섦 → 3 영웅) =====
+const ROYAL_TALK={
+ '황제 레오폴트 3세':[['...누가 이 천한 자를 궁의 테라스까지 들였느냐. 근위병!','짐은 용병 따위와 말을 섞지 않는다.','황성의 공기를 더럽히지 말고 물러가라.'],['맹약단이라... 그 반역자의 깃발을 다시 든 자가 너냐.','짐의 시간은 금보다 귀하다. 용건만 말하라.','공을 세웠다는 소문은 들었다. 허나 그것으로 충분치 않다.'],['그대의 공은 짐도 알고 있다. 황실의 이름으로 치하하노라.','발테르의 일은... 짐의 눈이 흐렸던 탓이다.','맹약단의 깃발을 황성 성벽에 거는 것을 허락하마.'],['용병왕이여, 짐이 먼저 고개를 숙이겠노라.','그대가 없었다면 이 제국은 이미 심연에 삼켜졌을 것이다.','짐의 옥좌 옆자리는 언제나 그대를 위해 비워 두겠다.']],
+ '황후 마리엔':[['어머, 어디서 이런 흙냄새가... 시녀, 향수를.','테라스는 황실 가족만 오르는 곳이랍니다.','손님은 아래 광장에서 기다리시지요.'],['세레나가 당신 이야기를 하더군요. 무례하진 않길 바라요.','용병이라도 예의는 아는군요.','차 한 잔 정도는... 허락하지요.'],['당신 덕분에 세레나가 웃음을 되찾았어요. 고마워요.','황실 연회에 당신 자리를 마련해 두었어요.','폐하께서도 요즘 당신 칭찬을 하신답니다.'],['제국의 은인께 황후로서 감사드려요.','당신의 이름은 황실 기록에 영원히 남을 거예요.','언제든 궁에 들르세요. 문은 늘 열려 있어요.']],
+ '재상 클라우스':[['서류 없이는 아무것도 안 됩니다. 돌아가시오.','용병 등록증? 황성에서는 휴지 조각이오.','시간 낭비요.'],['맹약단 서류는... 흠, 절차상 문제는 없군.','재무관이 당신을 칭찬하더군. 드문 일이오.','세금은 꼬박꼬박 내시오.'],['황실 인가 서류는 내가 직접 처리해 두었소.','발테르 공작의 장부를 넘겨준 것, 잊지 않겠소.','당신 같은 사람이 관리였다면 좋았을 텐데.'],['재상인 내가 서류 없이 문을 열어 드리겠소.','제국의 모든 행정이 당신에게 협조할 것이오.','당신 이름으로 된 법령 초안을 쓰고 있소. 농담이오. 반쯤은.']]};
+const NOBLE_TALK={t4:[['평민... 아니, 용병인가. 길을 비키게.','이 거리는 귀족 전용이오. 모르셨소?','냄새가 나는군. 어디 시골에서 왔나?','내 마차에 흙을 튀기지 마시오.','용병은 하수도나 치우는 자들 아니었소?'],['맹약단? 소문은 들었소. 쓸 만하다더군.','우리 가문 경비가 필요하면 부르겠소. 비싸게 굴지 마시오.','투기장에서 당신에게 돈을 걸었소. 이겼더군.','흥, 실력은 인정하지.','황녀님께서 당신 얘기를 하시더이다.'],['맹약단 단장이시군요. 저희 연회에 와 주시겠소?','우리 가문은 맹약단을 후원하고 싶소.','귀족들 사이에서도 당신은 화제요.','예전 무례를 사과하겠소.','당신과 사업 이야기를 나누고 싶소.'],['용병왕이시여! 저희 가문의 영광입니다.','귀족 회의에서 당신을 명예 작위에 추천했습니다.','제 딸이 당신 초상화를 방에 걸어 두었습니다.','당신 앞에서는 작위도 빛이 바래는군요.','황성의 모든 귀족이 당신에게 고개를 숙입니다.']]};
+
+// ===== v1.8 소문 · 주점 · 살림 쪽지 =====
+const TAVERN_NAMES={t1:'들꽃 선술집',t2:'곡괭이 주점',t3:'갈매기 주점',t4:'황금 잔 주점',t5:'이슬 술집',t6:'화주 주점',t7:'모래별 찻집',t9:'대숲 주점',t8:'설향 다실'};
+const RUMOR={
+ casino:['{casino}에서 {nm}이(가) 홀짝으로 {amt} G를 땄대! 나도 가 볼까?','{casino} 딜러 눈빛이 요즘 이상하대. 그래도 어제 {nm}은(는) {amt} G를 챙겼다던데.','{casino} 주사위 대결에서 연속 다섯 판을 이긴 사람이 나왔대. 이름이 {nm}였나?','{nm}이(가) {casino}에서 전 재산을 걸었다가 두 배로 불렸다더라. 운도 실력이지!','{casino} 지하 투기장에서 무명 투사가 우승했대. 배당이 네 배였다나?','투사 내기는 능력치만 보면 안 된대. 속도 빠른 쪽이 의외로 이긴다더라.','{casino}에서 {amt} G 잃고 울면서 나온 사람을 봤어. 적당히 해야지.','{casino}에 가면 딜러한테 웃어 줘. 매력 높은 사람한테 운이 붙는대. 진짜래!'],
+ dungeon:['{dun} 깊은 곳엔 {boss}이(가) 산대. Lv{lv} 이상은 돼야 안 죽는다더라.','{dun}에서 돌아온 용병이 그러는데, 정예 놈들은 꼭 둘씩 다닌대.','{dun} 보물 상자엔 함정이 많대. 지력이 높으면 미리 보인다나.','{dun}의 {boss}은(는) 처음엔 약해 보여도 피가 줄면 사나워진대.','{dun} 모닥불에서 쉬고 돌아가는 게 현명하대. 욕심내다 전멸한 용병단이 많다더라.','{dun}엔 떠돌이 상인이 가끔 나타난대. 물약을 싸게 판다나.','{boss}을(를) 잡으려면 방패병을 앞에 세우고 사제를 꼭 데려가래.','{dun}에서 나온 장비를 대장간에서 강화하면 훨씬 세진대. 은광석 이상은 직접 캐야 하지만.'],
+ tips:['광산에서 숙련이 「초보」가 되면 은광석이 나온대. 화산 광산 흑요석은 「숙련」부터고.','강화는 +9부터 화염 결정이 필요하대. 불칼 요새 화산 광산 깊은 곳에서만 나온다나.','명성이 아주 높아지면 숨은 중개인이 비밀 경매장으로 데려간대.','동방 대륙은 바다 건너래. C등급은 돼야 뱃사람들이 태워 준다더라.','마을 의뢰를 끝까지 해 주면 그 마을 사람들 태도가 확 달라진대.','대륙 의뢰를 하는 사람은 파란 느낌표로 알아볼 수 있대. 마을 입구 근처에 있다나.','주간 의뢰는 닷새마다 바뀐대. 미리미리 해 두는 게 좋아.','낚시 숙련이 오르면 매력이 붙는대. 물가에 「낚시터」 팻말이 있는 데서만 되지만.','장비는 같은 세트로 맞추면 숨은 힘이 깨어난대.','상위 마을 상점에선 스킬서를 판대. 배웠다 잊었다 할 수도 있다나.'],
+ lore:['옛날에 붉은 망토를 두른 기사가 이 길로 지나갔대. 맹약단 단장이었다나.','발테르 공작 영지에서 밤마다 이상한 마차가 나간대. 뭘 싣는지는 아무도 몰라.','천 년 전 엘프와 인간이 맹약을 맺었대. 그 맹약을 지키던 게 맹약단이었다고.','동방 산꼭대기엔 녹지 않는 얼음이 있는데, 그 안에 사람이 있다는 소문이 있어.','심연의 균열이 열리면 땅이 잿빛으로 변한대. 요즘 숲 가장자리가 수상해.','블랙솔트 해적단이 바다 밑 유적에서 뭔가를 훔쳤대. 그게 저주를 불렀다나.','술탄궁 지하엔 봉인의 고리가 있다는 전설이 있어.','맹약단이 해산된 날, 황제 폐하가 밤새 우셨다는 소문도 있어.']};
+const HOME_HINTS=['"우리 할아버지는 맹약단 깃발 아래서 싸우셨다. 붉은 망토 단장님은 절대 먼저 등을 보이지 않으셨지."','"장보기: 빵 둘, 우유, 그리고 은광석 하나(사위가 칼 강화한대)"','"발테르 공작의 마차를 조심할 것. 밤에 국경 쪽으로 간다."','"용병 고를 때는 잠재력이 중요하다. 세 번 레벨이 오르면 알 수 있다고 함."','"엄마에게: 도박장 또 가면 이번엔 진짜 화낼 거예요."','"천 년 전 맹약: 엘프의 숲, 드워프의 불, 인간의 검이 세 봉인을 지킨다."','"모닥불 방에서는 쉬거나 훈련하거나 돌아갈 수 있다. 욕심은 금물."','"함정 많은 던전엔 지력 높은 단장이 낫다. 보물도 더 잘 찾는다."','"동방에 가면 단풍주를 꼭 마셔 볼 것. 아르칸이라는 손님도 좋아했다던데."','"정예 몬스터는 금화를 두 배쯤 준다. 대신 아프다."','"(아이 글씨) 커서 맹약단 들어갈 거다!!!"','"세금 고지서 — 이번 달도 밀렸음. 맹약단 의뢰라도 해 볼까."'];
 return {I,RANKS,PROMO,RANK_COLOR,TIER,priceRef,GRADES,POTENTIAL,wageOf,JOBS,JOB_KEYS,LCLASS,PASSIVE,SKILLS,PERS,PERS_KEYS,LINES,JOB_LINES,GRADE_LINES,
-  ORES,NAMES_M,NAMES_F,SURN,MON,BOSS,TROPHY,TOWNS,DUNG,THEME,EXAMS,WB,WPN,ARMS,ACCS,RARITY,UNIQUE,CONSUM,CAMP_TIERS,BUILDS,DECOR,TOWN_TALK,MAIN,SUBS,DAILY,HUMAN_LOOK,HAIRS,HAIR_COLORS,CAMP_VISITOR,TYPE_TALK,TOWN_FOLK,WVAR,WMAT,GVAR,AFFIX_PRE,AFFIX_SUF,SETS,BOOKS,FOLK_MORE,GUARD_MORE,MERCH_MORE,CONT_TALK,CQ};
+  ORES,NAMES_M,NAMES_F,SURN,MON,BOSS,TROPHY,TOWNS,DUNG,THEME,EXAMS,WB,WPN,ARMS,ACCS,RARITY,UNIQUE,CONSUM,CAMP_TIERS,BUILDS,DECOR,TOWN_TALK,MAIN,SUBS,DAILY,HUMAN_LOOK,HAIRS,HAIR_COLORS,CAMP_VISITOR,TYPE_TALK,TOWN_FOLK,WVAR,WMAT,GVAR,AFFIX_PRE,AFFIX_SUF,SETS,BOOKS,TAVERN_NAMES,RUMOR,HOME_HINTS,ROYAL_TALK,NOBLE_TALK,FOLK_MORE,GUARD_MORE,MERCH_MORE,CONT_TALK,CQ};
 })();

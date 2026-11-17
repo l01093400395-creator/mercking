@@ -7,9 +7,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#2b1d14">
 <title>용병왕의 길</title>
-<link rel="stylesheet" href="css/style.css?v=19">
-<link rel="stylesheet" href="css/theme.css?v=19">
-<link rel="stylesheet" href="css/ts.css?v=19">
+<link rel="stylesheet" href="css/style.css?v=22">
+<link rel="stylesheet" href="css/theme.css?v=22">
+<link rel="stylesheet" href="css/ts.css?v=22">
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -33,6 +33,7 @@
 </div>
 
 <!-- 현재 목표 -->
+<div id="joy" class="hidden"><div id="joyK"></div></div><button id="joyA" class="hidden">말걸기</button>
 <div id="goal" class="hidden"><b>목표</b> <span id="goalTxt"></span></div>
 
 <!-- 집결지 승급 가이드 -->
@@ -50,6 +51,7 @@
     <span id="bTitle"></span>
     <span class="bbtns"><button id="bAuto" class="tog">단장 오토 <b>OFF</b></button><button id="bSpeed" class="tog">속도 ×1</button></span>
   </div>
+  <div id="bSyn" class="bsyn"></div>
   <div id="bCmd" class="bcmd hidden"></div>
   <div id="bHint" class="bhint"></div>
 </div>
@@ -57,6 +59,7 @@
 <!-- 던전 지도 -->
 <div id="dmap" class="hidden">
   <div class="dmtop box"><span id="dmName"></span><span id="dmLoot"></span></div>
+  <div id="dmAutoBar" class="hidden"><button id="dmAuto">🤖 자동 탐험</button><span id="dmSpd"><button data-spd="1">×1</button><button data-spd="2">×2</button><button data-spd="3">×3</button><button data-spd="5">×5</button></span></div>
   <div id="dmScroll"><div id="dmInner"><svg id="dmSvg"></svg></div></div>
   <div class="dmbot"><div id="dmParty" class="dmparty"></div><div class="dmbtns"><button id="dmPot">🧪 물약</button><button id="dmRet" class="warn">⟲ 귀환</button></div></div>
 </div>
@@ -73,8 +76,9 @@
 <div id="fade"></div>
 <button id="sndbtn" title="소리">🔊</button>
 
-<script src="js/gamedata.js?v=19"></script>
-<script src="js/game.js?v=19"></script>
-<script src="js/ui.js?v=19"></script>
+<script src="js/gamedata.js?v=22"></script>
+<script src="js/gamedata2.js?v=22"></script>
+<script src="js/game.js?v=22"></script>
+<script src="js/ui.js?v=22"></script>
 </body>
 </html>

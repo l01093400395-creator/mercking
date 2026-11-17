@@ -115,3 +115,27 @@ button{font:inherit;cursor:pointer}
   #dmap{padding-top:max(90px,calc(env(safe-area-inset-top) + 86px))}
   #bhud .btop{top:max(6px,env(safe-area-inset-top))}
 }
+
+/* v1.8 가상 조이스틱 (터치 기기) */
+#joy{position:fixed;left:18px;bottom:78px;width:118px;height:118px;border-radius:50%;background:rgba(30,20,10,.28);border:2px solid rgba(255,240,210,.45);z-index:30;touch-action:none}
+#joyK{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(255,240,210,.55);border:2px solid rgba(90,60,30,.6);pointer-events:none}
+#joyA{position:fixed;right:18px;bottom:96px;width:74px;height:74px;border-radius:50%;background:rgba(200,60,40,.62);color:#fff;border:2px solid rgba(255,240,210,.7);font-weight:bold;font-size:14px;z-index:30;touch-action:none}
+#joyA.dim{opacity:.45}
+
+/* v1.8 던전 자동 탐험 · 배속 */
+#dmAutoBar{position:fixed;right:8px;top:54px;display:flex;gap:4px;align-items:center;pointer-events:auto;z-index:25;flex-wrap:wrap;justify-content:flex-end;max-width:60vw}
+#dmAutoBar button{padding:5px 8px;font-size:13px}
+#dmAutoBar #dmAuto.on{background:#3a8a3a;color:#fff}
+#dmSpd button.on{background:#d8a03a;color:#2a1a10}
+#dmSpd{display:flex;gap:3px}
+#dmAutoBar.off #dmSpd{opacity:.45}
+@media (max-width:600px){#dmAutoBar{top:150px;bottom:auto;right:8px;max-width:70vw}#dmAutoBar button{padding:6px 9px;font-size:13px}}
+
+/* v2.0 시너지 표시 */
+#bhud .bsyn{position:absolute;left:8px;top:calc(max(8px,env(safe-area-inset-top)) + 40px);display:flex;flex-wrap:wrap;gap:4px;max-width:62%;pointer-events:auto}
+.syn{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;background:rgba(30,20,10,.78);border:1px solid #c9a35a;color:#ffe7b0;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.syn i{font-style:normal}.syn b{color:#ffd166}
+.syn.off{opacity:.45;border-color:#777;color:#ccc}
+.syncard{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}
+.named-tag{color:#ffd166;font-weight:800}
+@media (max-width:600px){#bhud .bsyn{max-width:92%;top:calc(max(6px,env(safe-area-inset-top)) + 38px)}#bhud .bsyn .syn span{display:none}}
