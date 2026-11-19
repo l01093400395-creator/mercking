@@ -36,6 +36,7 @@ for(const k of ['warrior_blue','warrior_yellow','archer_blue'])LIST.push(['ts_'+
 for(const k of ['nobleman','noblewoman','oldman','oldwoman','peasant','princess','queen','villagerman','villagerwoman','worker'])LIST.push(['mf_'+k,'assets/mf/'+k+'.png']);
 for(const k of ['Desert','Field','Floor','House','Nature','Water','Element'])LIST.push(['nj_'+k.toLowerCase(),'assets/nj/Tileset'+k+'.png']);
 for(const k of ['boy','cavegirl','child','egggirl','eskimo','hunter','inspector','knight','knightgold','lionboy','mangreen','master','monk','monk2','ninjablue','ninjaeskimo','ninjagray','ninjared','noble','oldman','oldman2','oldwoman','princess','samurai','samuraiblue','shaman','villager','villager2','villager3','woman'])LIST.push(['njc_'+k,'assets/nj/ch/'+k+'.png']);
+LIST.push(['nj_bed','assets/nj/bed.png'],['nj_camp','assets/nj/camp.png'],['nj_wmill','assets/nj/watermill.png'],['nj_plant','assets/nj/plant.png']);
 LIST.push(['nj_ifloor','assets/nj/TilesetInteriorFloor.png'],['nj_leaf','assets/nj/house_leaf.png']);for(const k of ['ripple','flower','mill','flag'])LIST.push(['nj_'+k,'assets/nj/'+k+'.png']);LIST.push(['ui_up','assets/ui/arrow_up.png'],['fan_gate','assets/fan/citygate.png'],['fan_banner','assets/fan/banner_purple.png']);LIST.push(['nj_boat','assets/nj/veh/boat.png'],['nj_sail','assets/nj/veh/Sail.png'],['nj_net','assets/nj/veh/FishNet.png']);LIST.push(['nj_vil','assets/nj/TilesetVillageAbandoned.png']);for(const [k,f] of [['nj_fdet','TilesetFloorDetail'],['nj_floorb','TilesetFloorB'],['nj_relief','TilesetRelief'],['nj_reliefd','TilesetReliefDetail']])LIST.push([k,'assets/nj/'+f+'.png']);
 LIST.push(['t_int','assets/tiles/interior.png'],['t_furn','assets/tiles/furniture.png']);
 LIST.push(['t_bridges','assets/tiles/bridges.png'],['el_mf_bunny','assets/ss/el/mf_bunny.png'],['el_mf_deer','assets/ss/el/mf_deer.png'],['el_coracle','assets/ss/el/coracle.png'],['t_goldmine','assets/tiles/goldmine.png'],['dg_dtiles','assets/dg/dtiles.png'],['el_crate_base','assets/ss/el/crate_base.png'],['el_crate_top','assets/ss/el/crate_top.png'],['dg_props','assets/dg/props.png'],['w_tiles','assets/world/tileset.png'],['w_mount','assets/world/mountains.png'],['w_water','assets/world/water.png']);
@@ -237,7 +238,7 @@ function njScatter(m,items,count,seed,area,opt){opt=opt||{};let r=seed*9301+4929
 function njo(m,im,r,x,y,bw,bh){const o={t:'furn',k:'nj',x,y,base:(y+(bh||1))*T,im,r,ox:(Math.round(r[2]/16)*16-r[2])/2};m.objs.push(o);if(bw)block(m,x,y+(bh||1)-1-((bh||1)-1),bw,bh||1);return o;}
 const VA={hut:[176,0,48,48],hut2:[176,48,48,48],orange:[64,0,64,48],tall:[192,96,64,80],thatch:[256,80,64,86],treehouse:[224,0,48,80],bigtree:[0,96,64,48],smalltree:[64,96,32,34],stone:[32,48,16,48],rock:[48,64,16,32],pot:[64,64,16,16],pot2:[80,64,16,16],log:[96,96,16,32],stump:[96,128,16,16],ferns:[64,80,32,16]};
 const NJ={hay:[144,128,16,16],pumpkin:[144,144,16,16],cabbage:[160,144,16,16],rail:[192,112,16,16],crate:[304,224,32,16],dome:[0,0,48,48],tower:[48,0,48,80],bigA:[96,0,64,48],bigB:[160,0,96,64],bigC:[256,0,64,64],palm:[160,64,64,48],palm2:[160,112,64,48],palm3:[160,160,64,32],lion2:[0,144,32,48],teal:[96,112,32,32],pool:[272,112,48,48],lionS:[0,96,32,48],stall1:[32,160,32,32],stall2:[64,160,32,32],pot:[96,176,16,16],pot2:[112,176,16,16],well:[0,48,32,32],
-  hRed:[0,0,64,48],hTan:[64,0,64,48],hOrange:[128,0,64,48],pagoda:[192,0,64,48],shop:[256,0,48,48],hGreen:[304,0,64,48],hRound:[368,0,48,48],hWood:[416,0,48,48],hBig:[464,0,64,64],torii:[0,80,48,32],igloo:[0,176,48,48],igloo2:[48,176,48,48],igloo3:[96,176,48,48],longhouse:[400,112,64,112],longhouse2:[416,224,64,96],statueA:[0,240,48,48],banner:[352,320,16,32],banner2:[384,320,16,32],banner3:[416,320,16,32],snowpine:[128,0,32,32],whitetree:[160,0,32,32],snowclump:[64,80,64,48],whiteclump:[128,80,64,48],cherry:[0,288,48,48],whitebig:[96,288,48,48],pinktree:[224,0,32,32],snowrock:[32,192,32,32],greyrock:[256,80,64,48],bush:[0,160,16,16],arch:[464,320,64,48],tGreen:[0,0,32,32],tPine:[32,0,32,32],tDead:[64,0,32,32],tOak:[96,0,32,32],tSnowRound:[192,0,32,32],tLime:[256,0,32,32],tLime2:[288,0,32,32],bigGreen:[48,288,48,48],bigAutumn:[144,288,48,48],stump:[0,128,32,32],stump2:[32,128,32,32],rockB:[240,160,32,32],rockB2:[240,192,32,32],rockBig:[272,160,64,48],rockTall:[336,160,32,48],rockSm:[272,208,48,16],rockG:[240,224,32,32],rockG2:[240,256,32,32],rockGBig:[272,224,64,48],rockGTall:[336,224,32,48],rockGSm:[272,272,48,16],snowBall:[64,192,16,16],snowBall2:[80,192,16,16],snowRockD:[0,192,32,32],tuft:[16,160,16,16],tuft2:[48,160,16,16],sunflower:[0,176,16,16],flowerR:[48,176,16,16],fern:[64,176,16,16],dSkull:[256,176,16,16],dRibs:[272,176,16,16],dFrag:[288,176,16,16],dBone:[304,176,16,16],dSprout:[224,160,16,16],dSprout2:[224,176,16,16],dVine:[128,160,32,32],dDry:[128,144,16,16]};
+  hRed:[0,0,64,48],hTan:[64,0,64,48],hOrange:[128,0,64,48],pagoda:[192,0,64,48],shop:[256,0,48,48],hGreen:[304,0,64,48],hRound:[368,0,48,48],hWood:[416,0,48,48],tallwood:[400,224,64,80],hutw:[304,304,48,48],hBig:[464,0,64,64],torii:[0,80,48,32],igloo:[0,176,48,48],igloo2:[48,176,48,48],igloo3:[96,176,48,48],longhouse:[400,112,64,112],longhouse2:[416,224,64,96],statueA:[0,240,48,48],banner:[352,320,16,32],banner2:[384,320,16,32],banner3:[416,320,16,32],snowpine:[128,0,32,32],whitetree:[160,0,32,32],snowclump:[64,80,64,48],whiteclump:[128,80,64,48],cherry:[0,288,48,48],whitebig:[96,288,48,48],pinktree:[224,0,32,32],snowrock:[32,192,32,32],greyrock:[256,80,64,48],bush:[0,160,16,16],arch:[464,320,64,48],tGreen:[0,0,32,32],tPine:[32,0,32,32],tDead:[64,0,32,32],tOak:[96,0,32,32],tSnowRound:[192,0,32,32],tLime:[256,0,32,32],tLime2:[288,0,32,32],bigGreen:[48,288,48,48],bigAutumn:[144,288,48,48],stump:[0,128,32,32],stump2:[32,128,32,32],rockB:[240,160,32,32],rockB2:[240,192,32,32],rockBig:[272,160,64,48],rockTall:[336,160,32,48],rockSm:[272,208,48,16],rockG:[240,224,32,32],rockG2:[240,256,32,32],rockGBig:[272,224,64,48],rockGTall:[336,224,32,48],rockGSm:[272,272,48,16],snowBall:[64,192,16,16],snowBall2:[80,192,16,16],snowRockD:[0,192,32,32],tuft:[16,160,16,16],tuft2:[48,160,16,16],sunflower:[0,176,16,16],flowerR:[48,176,16,16],fern:[64,176,16,16],dSkull:[256,176,16,16],dRibs:[272,176,16,16],dFrag:[288,176,16,16],dBone:[304,176,16,16],dSprout:[224,160,16,16],dSprout2:[224,176,16,16],dVine:[128,160,32,32],dDry:[128,144,16,16]};
 function house(m,o){if(!o.spr&&!o.composed){o.spr=ACTSPR[o.act]||['gable','blue2','red','flat'][(o.x*7+o.door*3)%4];}
   if(o.spr)return sprHouse(m,o);
   const y=o.door-(o.h+2);const b=Object.assign({t:'house',y,roof:o.roof??0},o);b.dx=b.x+Math.floor(b.w/2);b.dy=o.door;
@@ -446,10 +447,59 @@ function specialShops(m,tk){const N=SPEC_NAMES[tk];if(!N)return;const cand=m.obj
   const pickH=pref=>{let h=cand.find(o=>pref.includes(o.name))||cand[0];if(h)cand.splice(cand.indexOf(h),1);return h;};
   const g=pickH(['농가','방앗간','그물 공방','민가']);if(g){g.act='grocer';g.name=N[0];g.sign=D.I(7,3);}
   const a=pickH(['대장장이 집','광석 감정소','창고','민가']);if(a){a.act='artisan';a.name=N[1];a.sign=D.I(7,13);}}
+// 서방 마을 민가 일부를 닌자 집으로 바꿔 같은 모양 반복을 줄인다 (문 위치는 그대로)
+const NJ_MIX=['hRed','hTan','hOrange','hGreen','hRound','hWood','hutw','tallwood'];
+function ninjaMix(m,tk){if(!['t1','t2','t3','t4','t6'].includes(tk))return;let sd=0;for(const ch of tk+'mix')sd=sd*31+ch.charCodeAt(0)&0xfffffff;const R=()=>{sd=(sd*1103515245+12345)&0x7fffffff;return sd/0x7fffffff;};
+  const hs=m.objs.filter(o=>o.t==='house'&&o.spr&&!o.act&&!o.nj&&['민가','농가','선원 숙소','광부 숙소','창고','상인 집'].includes(o.name));let k=Math.floor(R()*NJ_MIX.length);
+  for(const o of hs){if(R()<.45)continue;const S=SPRB[o.spr];const x0=Math.floor((o.bx+2)/T),x1=Math.floor((o.bx+S.w-3)/T),r0=o.door-(S.rows||2);
+    const key=NJ_MIX[k++%NJ_MIX.length],r=NJ[key];const cols=Math.round(r[2]/T),rows=Math.ceil(r[3]/T),nx=o.dx-(cols>>1);
+    for(let y=r0;y<=o.door;y++)for(let x=x0;x<=x1;x++)m.blk[gi(m,x,y)]=0;
+    let fit=nx>=1&&nx+cols<m.w-1&&o.door-rows+1>=1;if(fit)for(let y=o.door-rows+2;y<=o.door&&fit;y++)for(let x=nx;x<nx+cols;x++)if(isBlocked(m,x,y)||(y<o.door&&m.g[gi(m,x,y)]===1))fit=false;
+    if(fit&&m.objs.some(q=>q!==o&&q.t==='house'&&q.bx!=null&&q.bx<(nx+cols)*T&&q.bx+q.bw>nx*T&&q.by<(o.door+1)*T&&q.by+q.bh>(o.door+1)*T-r[3]))fit=false;
+    if(!fit){block(m,x0,r0,x1-x0+1,(S.rows||2)+1);continue;}
+    m.objs.splice(m.objs.indexOf(o),1);njHouse(m,{x:nx,r,door:o.door,name:o.name,im:'nj_house'});}}
+// 마을 꾸미기 (닌자 자연·소품): 빈 풀밭에 테마 나무 무리, 집 옆 화분·통·상자, 길가 꽃·풀.
+// 길·문 앞·출구·다리·낚시터는 비워 두고, 놓을 때마다 입구에서 모든 문 앞으로 갈 수 있는지 확인한다.
+const PRETTY={
+  west:{trees:['tGreen','tOak','tLime','tLime2','bigGreen','tGreen','tOak'],rare:['cherry','pinktree'],clump:[[0,32,64,48],[64,32,64,48],[256,32,64,48]],small:['tuft','tuft2','flowerR','sunflower','fern','bush']},
+  t5:{trees:['bigGreen','tLime','tLime2','tGreen'],rare:['cherry','pinktree'],clump:[[256,32,64,48],[320,32,64,48]],small:['fern','tuft','flowerR','bush']},
+  t6:{trees:['tDead','tPine','tDead'],rare:['rockBig','rockTall'],clump:[[0,32,64,48]],small:['dDry','rockSm','tuft2']},
+  t7:{trees:['palm','palm2','palm3'],rare:['palm'],clump:[],small:['dSkull','dBone','dSprout','dSprout2','dDry']},
+  t8:{trees:['tSnowRound','snowpine','whitetree','tSnowRound'],rare:['whitebig','pinktree'],clump:[[128,32,64,48],[64,80,64,48]],small:['snowBall','snowBall2','tuft']},
+  t9:{trees:['tOak','pinktree','bigAutumn','tLime'],rare:['cherry','bigAutumn'],clump:[[192,32,64,48],[64,32,64,48]],small:['flowerR','fern','tuft','sunflower']}};
+function prettify(m,tk){const P=PRETTY[tk]||PRETTY.west;const W=m.w,H=m.h;let sd=0;for(const ch of tk+'pretty')sd=sd*31+ch.charCodeAt(0)&0xfffffff;const R=()=>{sd=(sd*1103515245+12345)&0x7fffffff;return sd/0x7fffffff;};
+  const occ=new Uint8Array(W*H);const mark=(x,y,w,h,pad)=>{pad=pad||0;for(let j=y-pad;j<y+h+pad;j++)for(let i=x-pad;i<x+w+pad;i++)if(i>=0&&j>=0&&i<W&&j<H)occ[j*W+i]=1;};
+  for(const o of m.objs){if(o.t==='house'&&o.bx!=null){mark(Math.floor(o.bx/T),Math.floor(o.by/T),Math.ceil(o.bw/T),Math.ceil(o.bh/T)+1,1);mark(o.dx-1,o.dy+1,3,2);continue;}
+    if(o.x==null)continue;const by0=Math.floor((o.base||(o.y+1)*T)/T)-1;const solid=o.act||o.t==='tree'||o.t==='spot'||o.t==='cliff'||o.t==='fence'||(by0>=0&&by0<H&&o.x>=0&&o.x<W&&m.blk[by0*W+o.x]);if(!solid){o._soft=1;continue;}
+    if(o.r){const by=Math.floor((o.base||(o.y+1)*T)/T);const rh=Math.ceil(o.r[3]/T),rw=Math.ceil(o.r[2]/T);mark(o.x,by-rh,rw,rh);}else mark(o.x-1,o.y-2,4,3);}
+  for(const e of m.exits||[])mark(e.x-2,e.y-2,5,5);for(const b of m.bridges||[])mark((b.x||0)-1,(b.y||0)-1,(b.w||1)+2,(b.h||1)+2);for(const st of m.stairs||[])mark(st.x-1,st.y-2,(st.w||2)+2,5);
+  for(const e of m.extras||[])mark(e[0]-1,e[1]-1,3,3);for(const l of m.labels||[])mark(Math.floor(l.x)-2,Math.floor(l.y),4,1);mark(m.spawn.x-2,m.spawn.y-2,5,5);
+  const cnt={};for(const g of m.g)cnt[g]=(cnt[g]||0)+1;const base=+Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+  const free=(x,y,w,h,clear)=>{for(let j=y-clear;j<y+h+clear;j++)for(let i=x-clear;i<x+w+clear;i++){if(i<1||j<1||i>=W-1||j>=H-1)return false;const g=m.g[j*W+i];if(occ[j*W+i]||isBlocked(m,i,j)||(g!==0&&g!==base))return false;}return true;};
+  const reach=()=>{const seen=new Uint8Array(W*H),q=[[m.spawn.x,m.spawn.y]];seen[m.spawn.y*W+m.spawn.x]=1;for(let i=0;i<q.length;i++){const [x,y]=q[i];for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+b;if(nx>=0&&ny>=0&&nx<W&&ny<H&&!seen[ny*W+nx]&&!isBlocked(m,nx,ny)){seen[ny*W+nx]=1;q.push([nx,ny]);}}}return seen;};
+  const doors=m.objs.filter(o=>o.t==='house'&&o.dx!=null).map(o=>[o.dx,o.dy+1]).concat((m.exits||[]).map(e=>[e.x,e.y]));
+  const tryPut=(rect,x,y,bw)=>{const fw=Math.ceil(rect[2]/T),fh=Math.ceil(rect[3]/T);const bx=x+Math.floor((fw-bw)/2);block(m,bx,y+fh-1,bw,1);const seen=reach();
+    if(doors.some(([dx,dy])=>!seen[dy*W+dx]&&!isBlocked(m,dx,dy))){for(let i=bx;i<bx+bw;i++)m.blk[(y+fh-1)*W+i]=0;return false;}
+    const o={t:'furn',k:'nj',x,y:y+fh-1,base:(y+fh)*T,im:'nj_nature',r:rect,ox:(fw*16-rect[2])/2};m.objs=m.objs.filter(q=>!(q._soft&&q.x>=x-1&&q.x<x+fw+1&&(q.y??0)>=y-1&&(q.y??0)<y+fh+1));m.objs.push(o);mark(x,y,fw,fh);return true;};
+  // 나무 (큰 무리 → 한 그루), 빈 땅 넓이에 비례
+  const area=W*H;let want=Math.round(area/95),put=0;
+  for(let t=0;t<want*14&&put<want;t++){const big=P.clump.length&&R()<.22;const key=R()<.12?pick2(P.rare,R):pick2(P.trees,R);const rect=big?pick2(P.clump,R):NJ[key];if(!rect)continue;
+    const fw=Math.ceil(rect[2]/T),fh=Math.ceil(rect[3]/T);const x=1+Math.floor(R()*(W-fw-2)),y=1+Math.floor(R()*(H-fh-2));if(!free(x,y,fw,fh,0))continue;if(tryPut(rect,x,y,big?3:Math.min(2,fw)))put++;}
+  if(window.NXDBG){let fr=0,oc=0;for(let i=0;i<W*H;i++){if(occ[i])oc++;}for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(free(x,y,2,2,1))fr++;let c1=0,c2=0;for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){if(!occ[y*W+x]&&!isBlocked(m,x,y))c1++;if(!occ[y*W+x]&&!isBlocked(m,x,y)&&(m.g[y*W+x]===0))c2++;}console.log('cells',c1,c2,'free1',(()=>{let n=0;for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(free(x,y,1,1,0))n++;return n;})());console.log('pretty',tk,'base',base,'want',want,'put',put,'occ',oc,'/',W*H,'free2x2',fr);}
+  // 집 옆 소품: 문 양옆 빈 칸에 화분·통·상자
+  const PROPS=[['nj_desert',[96,176,16,16]],['nj_desert',[112,176,16,16]],['nj_nature',[144,128,16,16]],['nj_house',[304,226,32,16]],['nj_house',[256,232,16,24]],['nj_house',[256,208,16,16]]];
+  for(const o of m.objs.filter(o=>o.t==='house'&&o.dx!=null&&o.bx!=null)){if(R()<.35)continue;const side=R()<.5?-1:1;const x=side<0?Math.floor(o.bx/T)-1:Math.ceil((o.bx+o.bw)/T),y=o.dy;
+    if(x<1||x>=W-1||isBlocked(m,x,y)||m.g[y*W+x]===1||m.objs.some(q=>q.x===x&&q.y===y))continue;const [im,r]=pick2(PROPS,R);const fw=Math.ceil(r[2]/T);if(fw>1&&(isBlocked(m,x+1,y)||m.g[y*W+x+1]===1))continue;
+    block(m,x,y,fw,1);const seen=reach();if(doors.some(([dx,dy])=>!seen[dy*W+dx]&&!isBlocked(m,dx,dy))){for(let i=0;i<fw;i++)m.blk[y*W+x+i]=0;continue;}m.objs.push({t:'furn',k:'nj',x,y,base:(y+1)*T,im,r});}
+  // 길가 꽃·풀 (막지 않음)
+  let fl=Math.round(area/60);for(let t=0;t<fl*8&&fl>0;t++){const x=1+Math.floor(R()*(W-2)),y=1+Math.floor(R()*(H-2));if(!free(x,y,1,1,0))continue;const near=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>m.g[(y+b)*W+x+a]===1||occ[(y+b)*W+x+a]);if(!near&&R()<.6)continue;
+    const r=NJ[pick2(P.small,R)];if(!r)continue;m.objs.push({t:'furn',k:'nj',x,y,base:(y+1)*T-2,im:'nj_nature',r});occ[y*W+x]=1;fl--;}}
+function pick2(a,R){return a[Math.floor(R()*a.length)];}
 // 숲 채집: 나무 옆 빈 칸에 버섯 (마을마다 자리는 고정)
 function forage(m,tk){let sd=0;for(const ch of tk)sd=sd*31+ch.charCodeAt(0);const R=()=>{sd=(sd*1103515245+12345)&0x7fffffff;return sd/0x7fffffff;};
+  const W=m.w,seen=new Uint8Array(m.w*m.h),q=[[m.spawn.x,m.spawn.y]];seen[m.spawn.y*W+m.spawn.x]=1;for(let i=0;i<q.length;i++){const [x,y]=q[i];for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+b;if(nx>=0&&ny>=0&&nx<m.w&&ny<m.h&&!seen[ny*W+nx]&&!isBlocked(m,nx,ny)){seen[ny*W+nx]=1;q.push([nx,ny]);}}}
   let trees=m.objs.filter(o=>o.t==='tree');if(!trees.length&&(tk==='t5'||tk==='t9'))trees=m.objs.filter(o=>o.t==='furn'&&o.k==='nj'&&o.y>2&&o.y<m.h-3);if(tk==='t7')trees=[];let n=0;for(let k=0;k<60&&n<5&&trees.length;k++){const t=trees[Math.floor(R()*trees.length)];const x=t.x+(R()<.5?-1:1),y=t.y+(R()<.5?0:1);
-    if(x<1||y<1||x>=m.w-1||y>=m.h-1||isBlocked(m,x,y)||m.objs.some(o=>o.t==='forage'&&Math.abs(o.x-x)+Math.abs(o.y-y)<3))continue;const g=m.g[gi(m,x,y)];if(g===1||g===5)continue;
+    if(x<1||y<1||x>=m.w-1||y>=m.h-1||isBlocked(m,x,y)||!seen[y*W+x]||m.objs.some(o=>o.t==='forage'&&Math.abs(o.x-x)+Math.abs(o.y-y)<3))continue;const g=m.g[gi(m,x,y)];if(g===1||g===5)continue;
     m.objs.push({t:'forage',k:R()<.3?'mushblue':'mushred',x,y,base:(y+1)*T-2,act:'forage'});n++;}}
 function cropKey(o){return (MAP&&MAP.key||'m')+':'+(MAP&&MAP.inside?'in':'')+o.x+':'+o.y;}
 function buildTown(tk){const t=D.TOWNS[tk];let m;
@@ -507,7 +557,7 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     stall(m,15,13,'#2a8ab8');stall(m,29,13,'#d04a3a');bench(m,19,17);bench(m,24,17);bed(m,30,16,2,5);
     road(m,13,5,30,1);road(m,12,5,1,6);road(m,33,6,1,5);road(m,23,6,1,5);
     // 바다가 보이는 언덕 (계단으로만) + 개울과 다리
-    hill(m,1,1,11,4,[9]);road(m,9,7,2,4);H({x:3,w:4,h:1,door:4,roof:2,name:'등대지기 집',path:0});prop(m,'statue',8,3);m.objs.push({t:'flowers',x:2,y:4,base:5*T-8,seed:9});m.objs.push({t:'flowers',x:7,y:4,base:5*T-8,seed:4});
+    hill(m,1,1,11,5,[9]);road(m,9,8,2,3);H({x:3,w:4,h:1,door:4,roof:2,name:'등대지기 집',path:0});prop(m,'statue',8,3);m.objs.push({t:'flowers',x:2,y:5,base:6*T-8,seed:9});m.objs.push({t:'flowers',x:7,y:5,base:6*T-8,seed:4});
     riverV(m,8,2,12,25,true);bridge(m,6,18,6,'h');
     H({x:15,w:4,h:1,door:4,roof:3,name:'민가'});H({x:19,w:4,h:1,door:4,roof:1,name:'그물 공방'});
     H({x:26,w:4,h:1,door:4,roof:4,name:'민가'});H({x:29,w:4,h:1,door:4,roof:2,name:'민가'});H({x:36,w:4,h:1,door:4,roof:0,name:'선장 댁'});H({x:40,w:4,h:1,door:4,roof:3,name:'민가'});
@@ -519,17 +569,17 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     road(m,0,17,44,2);road(m,20,4,2,30);road(m,4,10,16,1);road(m,22,10,14,1);road(m,2,24,17,1);road(m,22,22,6,1);
     const VH=(o)=>njHouse(m,Object.assign({im:'nj_vil'},o));
     // 큰길 북쪽 상점가
-    VH({x:9,r:VA.hut,door:16,act:'relic',name:'정령 유물점'});VH({x:13,r:VA.hut2,door:16,act:'smith',name:'엘프 활 공방'});
-    VH({x:23,r:VA.tall,door:16,act:'guild',name:'숲의 의뢰소'});VH({x:28,r:VA.hut,door:16,act:'shop',name:'요정 가루 상점'});
+    const NHo=(o)=>njHouse(m,Object.assign({im:'nj_house'},o));NHo({x:9,r:NJ.hRound,door:16,act:'relic',name:'정령 유물점'});NHo({x:13,r:NJ.hWood,door:16,act:'smith',name:'엘프 활 공방'});
+    VH({x:23,r:VA.tall,door:16,act:'guild',name:'숲의 의뢰소'});NHo({x:28,r:NJ.hGreen,door:16,act:'shop',name:'요정 가루 상점'});
     njHouse(m,{x:36,r:[0,0,64,72],door:16,act:'inn',name:'잎사귀 여관',im:'nj_leaf'});
     // 북서: 숲지기 마을 (나무 위 집)
-    njo(m,'nj_vil',VA.thatch,2,9,4,2);m.labels.push({x:4,y:3.4,n:'🍃 장로의 거처'});VH({x:16,r:VA.hut,door:9,name:'숲지기의 집'});njo(m,'nj_vil',VA.treehouse,8,8,3,1);m.labels.push({x:9.5,y:3.3,n:'🌿 나무 위 집'});
+    njo(m,'nj_vil',VA.thatch,2,9,4,2);m.labels.push({x:4,y:3.4,n:'🍃 장로의 거처'});NHo({x:16,r:NJ.hutw,door:9,name:'숲지기의 집'});njo(m,'nj_vil',VA.treehouse,8,8,3,1);m.labels.push({x:9.5,y:3.3,n:'🌿 나무 위 집'});
     // 북동: 세계수 제단 (큰 나무 + 선돌)
     njo(m,'nj_nature',NJ.bigGreen,31,7,3,1);njo(m,'nj_vil',VA.bigtree,27,7,4,1);njo(m,'nj_vil',VA.bigtree,34,7,4,1);
     for(const [x,y] of [[29,9],[35,9],[28,4],[37,4]])njo(m,'nj_vil',VA.stone,x,y,1,1);m.labels.push({x:32.5,y:3.4,n:'🌳 세계수 제단'});
     // 큰길 남쪽: 민가 + 호수
-    VH({x:2,r:VA.hut2,door:23,name:'민가'});VH({x:7,r:VA.hut2,door:23,name:'민가'});VH({x:11,r:VA.hut,door:23,name:'민가'});VH({x:15,r:VA.hut2,door:23,name:'민가'});
-    VH({x:3,r:VA.hut2,door:30,name:'민가'});VH({x:8,r:VA.hut2,door:30,name:'방앗간'});road(m,4,31,1,1);road(m,9,31,1,1);road(m,4,25,1,6);road(m,9,25,1,6);
+    NHo({x:2,r:NJ.tallwood,door:23,name:'민가'});NHo({x:7,r:NJ.hutw,door:23,name:'민가'});NHo({x:11,r:NJ.hOrange,door:23,name:'민가'});VH({x:15,r:VA.hut2,door:23,name:'민가'});
+    VH({x:3,r:VA.hut,door:30,name:'민가'});NHo({x:8,r:NJ.hWood,door:30,name:'방앗간'});road(m,4,31,1,1);road(m,9,31,1,1);road(m,4,25,1,6);road(m,9,25,1,6);
     pond(m,25,24,15,8,true);fillG(m,31,22,2,5,6);
     m.objs.push({t:'spot',x:31,y:26,act:'fish',base:0});m.labels.push({x:32,y:26.6,n:'🎣 호수 낚시터',act:'fish'});
     m.objs.push({t:'board',x:26,y:20,base:21*T});block(m,26,20,2,1);
@@ -599,9 +649,9 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     const NH=(o)=>njHouse(m,Object.assign({im:'nj_house'},o));
     NH({x:3,r:NJ.hRed,door:13,act:'guild',name:'단풍골 의뢰소'});NH({x:8,r:NJ.shop,door:13,act:'shop',name:'시골 잡화점'});NH({x:12,r:NJ.hWood,door:13,act:'smith',name:'대장간'});
     NH({x:25,r:NJ.hBig,door:13,act:'inn',name:'단풍 주막'});NH({x:31,r:NJ.hOrange,door:13,name:'촌장 댁'});NH({x:37,r:NJ.hTan,door:13,name:'민가'});
-    NH({x:25,r:NJ.hTan,door:7,name:'민가'});NH({x:31,r:NJ.hOrange,door:7,name:'민가'});NH({x:36,r:NJ.hRound,door:7,name:'곳간'});
-    NH({x:4,r:NJ.hOrange,door:21,name:'민가'});NH({x:10,r:NJ.hTan,door:21,name:'민가'});NH({x:15,r:NJ.hOrange,door:21,name:'방앗간'});
-    NH({x:4,r:NJ.hTan,door:27,name:'민가'});NH({x:10,r:NJ.hOrange,door:27,name:'민가'});NH({x:15,r:NJ.hTan,door:27,name:'민가'});
+    NH({x:25,r:NJ.hWood,door:7,name:'민가'});NH({x:31,r:NJ.hGreen,door:7,name:'민가'});NH({x:36,r:NJ.hRound,door:7,name:'곳간'});
+    NH({x:4,r:NJ.hGreen,door:21,name:'민가'});NH({x:10,r:NJ.hTan,door:21,name:'민가'});NH({x:15,r:NJ.hOrange,door:21,name:'방앗간'});
+    NH({x:4,r:NJ.hWood,door:27,name:'민가'});NH({x:10,r:NJ.hOrange,door:27,name:'민가'});NH({x:15,r:NJ.hRound,door:27,name:'민가'});
     // 북서 호박밭 + 울타리
     fillG(m,3,4,9,4,5);for(let i=0;i<9;i++)for(let j=0;j<4;j++)if((i+j)%2===0){const q=njo(m,'nj_nature',(i+j)%4?NJ.pumpkin:NJ.cabbage,3+i,4+j,0,0);q.act='crop';q.ck=(i+j)%4?'pumpkin':'cabbage';}
     for(let i=2;i<13;i++){if(i===7)continue;njo(m,'nj_house',NJ.rail,i,8,1,1);}m.labels.push({x:7.5,y:2.6,n:'🎃 호박밭'});
@@ -631,7 +681,7 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     fillG(m,3,4,10,6,2);fillG(m,4,3,7,1,2);fillG(m,2,5,1,3,2);fillG(m,13,6,1,3,2);fillG(m,5,10,6,1,2);
     m.objs.push({t:'spot',x:8,y:10,act:'fish',base:0});m.labels.push({x:9,y:11.2,n:'🎣 얼음 구멍 낚시',act:'fish'});
     // 남쪽 민가
-    for(const [x,k,d] of [[3,'hTan',24],[9,'hOrange',25],[15,'hRound',24],[26,'hTan',25],[32,'hOrange',24],[38,'hRed',25]])NH({x,r:NJ[k],door:d,name:'민가'});
+    for(const [x,k,d] of [[3,'hWood',24],[9,'hGreen',25],[15,'hTan',24],[26,'hOrange',25],[32,'hRound',24],[38,'hTan',25]])NH({x,r:NJ[k],door:d,name:'민가'});
     for(const [x,y] of [[9,20],[18,15],[28,14],[25,21]])njo(m,'nj_house',NJ.banner,x,y,1,1);
     for(const [x,y] of [[16,22],[34,21]])njo(m,'nj_nature',NJ.cherry,x,y,3,1);
     const SI=['snowpine','snowpine','snowpine','whitetree','whitetree','snowclump','whiteclump','tSnowRound','snowrock','snowRockD','snowBall','snowBall2','rockGSm','rockG','cherry'].map(k=>({im:k==='cherry'||k[0]==='s'||k[0]==='t'||k[0]==='w'||k[0]==='r'?'nj_nature':'nj_nature',r:NJ[k],solid:!/snowBall/.test(k)}));
@@ -679,9 +729,9 @@ function buildTown(tk){const t=D.TOWNS[tk];let m;
     m.extras.push([29,10,'nobleman',1,'idle','황제 레오폴트 3세'],[23,10,'oldman',1,'idle','재상 클라우스']);
     m.spawn={x:1,y:18};m.exits=[{x:0,y:18,to:'world',n:'월드맵'},{x:67,y:18,to:'world',n:'월드맵'},{x:27,y:43,to:'world',n:'월드맵'}];}
   {const TV=D.TAVERN_NAMES[tk];const hs=m.objs.filter(o=>o.t==='house'&&o.name==='민가'&&!o.act);if(TV&&hs.length){const h=hs[Math.floor(hs.length/2)];h.act='tavern';h.name=TV;}}
-  specialShops(m,tk);
+  specialShops(m,tk);ninjaMix(m,tk);
   organicRoads(m,{t1:.7,t2:.9,t3:1.2,t4:1.4}[tk]);dress(m,{t1:.9,t2:.7,t3:.6,t4:.5}[tk]);
-  forage(m,tk);
+  prettify(m,tk);forage(m,tk);
   m.title=t.n+' · '+t.tag;m.town=tk;return m;}
 // 마을 꾸미기: 집마다 작은 마당 + 빈 풀밭에 나무 무리·덤불·바위·꽃
 function dress(m,dens){let sd=m.w*131+m.h*7;const R=()=>{sd=(sd*1103515245+12345)&0x7fffffff;return sd/0x7fffffff;};
@@ -718,7 +768,7 @@ const FURN={bed:['t_int',[87,8,18,34]],bed2:['t_int',[80,52,32,24]],fire:['t_int
 const NJF={shelf:['nj_house',[256,304,48,32]],counter:['nj_house',[256,256,48,32]],display:['nj_house',[304,256,48,32]],plant:['nj_house',[256,208,16,16]],flower:['nj_house',[272,208,16,16]],pot:['nj_house',[288,208,16,16]],
   window:['nj_house',[352,320,16,32]],curtain:['nj_house',[384,320,16,32]],paint:['nj_house',[416,320,16,32]],paint2:['nj_house',[400,320,16,32]],clock:['nj_house',[368,320,16,32]],barrels:['nj_house',[256,224,48,16]],crates:['nj_house',[304,224,32,16]],cabinet:['nj_house',[256,304,48,32]],tallcab:['nj_house',[288,208,16,16]]};
 function furn(m,k,x,y,bw,bh,o){if(m.njin&&k==='rug')return null;const F=(m.njin&&NJF[k])||FURN[k];const ob=Object.assign({t:'furn',k,x,y,base:(y+(bh||1))*T,im:F[0],r:F[1]},o||{});m.objs.push(ob);if(bw)block(m,x,y,bw,bh||1);return ob;}
-const ROOM={grocer:[12,9,'wood'],artisan:[12,9,'stone'],tavern:[16,11,'wood'],palace:[18,12,'stone'],minecave:[18,12,'stone'],guild:[14,10,'stone'],inn:[16,11,'wood'],smith:[12,9,'stone'],shop:[12,9,'wood'],relic:[12,9,'wood'],casino:[16,11,'wood'],hq:[14,10,'stone'],classhall:[14,10,'stone'],home:[10,8,'wood']};
+const ROOM={grocer:[14,10,'wood'],artisan:[14,10,'stone'],tavern:[18,12,'wood'],palace:[18,12,'stone'],minecave:[18,12,'stone'],guild:[16,11,'stone'],inn:[18,12,'wood'],smith:[14,10,'stone'],shop:[14,10,'wood'],relic:[14,10,'wood'],casino:[16,11,'wood'],hq:[14,10,'stone'],classhall:[14,10,'stone'],home:[12,9,'wood']};
 const OWNER={grocer:['식료품 상인','villagerwoman'],artisan:['도면 장인','worker'],tavern:['주점 주인','villagerman'],guild:['접수원','villagerwoman'],inn:['여관 주인','villagerman'],smith:['대장장이','worker'],shop:['상점 주인','villagerman'],relic:['유물 상인','noblewoman'],casino:['딜러','nobleman'],hq:['길드 마스터','oldman'],classhall:['전직 교관','oldman']};
 function buildInterior(o,tk){const act=o.act||(o.name==='황궁'?'palace':'home');const R=ROOM[act]||ROOM.home;const [W,H,fl]=R;const m=mkMap('in',W,H);m.inside={o,tk};m.njin=D.TOWNS[tk]&&D.TOWNS[tk].nj;m.town=tk;m.title=(o.name||'민가')+' · 실내';m.pathMat='wood';m.floor=fl;
   for(let j=0;j<H;j++)for(let i=0;i<W;i++){const wall=j<2||i===0||i===W-1||j===H-1;m.g[gi(m,i,j)]=wall?22:20;}
@@ -754,8 +804,42 @@ function buildInterior(o,tk){const act=o.act||(o.name==='황궁'?'palace':'home'
     furn(m,'shelf',5,2,2,2);furn(m,'shelf',W-7,2,2,2);m.extras2=[[cx,2,'queen',1],[cx-2,3,'noblewoman',1],[cx+2,3,'nobleman',-1]];m.palace=true;}
   else if(act==='classhall'){ownPos=[cx,3];m.objs.push({t:'statue2',x:2,y:2,base:4*T});block(m,2,2,2,2);m.objs.push({t:'statue2',x:W-4,y:2,base:4*T});block(m,W-4,2,2,2);furn(m,'rug',cx-1,5,0,2);furn(m,'shelf',cx-4,2,2,2);furn(m,'shelf',cx+2,2,2,2);}
   else{furn(m,'bed',1,2,2,2);const sd=furn(m,'drawer',3,2,1,1);sd.act='search';sd.name='서랍';const bs=furn(m,'shelf',W-3,4,2,2);bs.act='search';bs.name='책장';furn(m,'fire',W-4,1,2,2,{oy:4});furn(m,'table',4,5,2,1);furn(m,'chair',3,5,1,1);furn(m,'chair2',6,5,1,1);furn(m,'rug',3,4,0,0);furn(m,'flower',W-2,H-2,1,1);furn(m,'paint',5,0,0,2,{oy:-2});}
-  m.objs.forEach(ob=>{if(ob.t==='furn'&&ob.k==='rug')ob.base=0;});
-  m.ownerPos=ownPos;return m;}
+  m.ownerPos=ownPos;njDecor(m,act,o,tk);
+  m.objs.forEach(ob=>{if(ob.t==='furn'&&(ob.k==='rug'||ob.k==='nx_rug'))ob.base=0;});
+  return m;}
+// 닌자 실내 소품(아궁이·화덕·가마솥·도마·침대·선반·자루·무기걸이·깃발…)으로 실내를 채운다.
+// 빈 바닥에만 놓고, 놓을 때마다 입구에서 모든 칸·주인·상호작용 물건 앞으로 갈 수 있는지 확인한다.
+const NX={oven:['nj_house',[464,88,32,40],2,1],stove:['nj_house',[464,206,32,34],2,1],kiln:['nj_house',[496,192,32,48],2,1],board:['nj_house',[464,128,32,24],2,1],
+  soup:['nj_house',[496,160,16,16],1,1],cauld:['nj_house',[512,160,16,16],1,1],bowl3:['nj_house',[256,208,48,16],3,1],barrel3:['nj_house',[256,232,48,24],3,1],crate2:['nj_house',[304,226,32,16],2,1],
+  sacks:['nj_house',[256,176,32,32],2,1],rackA:['nj_house',[224,176,32,24],2,1],rackB:['nj_house',[224,200,32,24],2,1],ladder:['nj_house',[384,256,16,48],1,1],
+  bedO:['nj_bed',[0,0,32,48],2,3],bedR:['nj_bed',[0,48,32,48],2,3],bedB:['nj_bed',[112,48,32,48],2,3],bedG:['nj_bed',[112,0,32,48],2,3],
+  books:['nj_camp',[112,128,16,16],1,1],lamp:['nj_camp',[208,112,16,16],1,1],kettle:['nj_camp',[96,48,16,16],1,1],logs:['nj_camp',[0,0,48,16],3,1],rug:['nj_camp',[128,80,32,32],0,0]};
+const NX_BAN=[[352,320],[368,320],[384,320],[400,320],[416,320],[432,320],[448,320]];
+const NX_SET={home:['stove','board','cauld','sacks','bedG','crate2'],inn:['kiln','board','soup','bedO','bedR','bedB','barrel3','sacks','crate2'],
+  tavern:['oven','board','soup','cauld','barrel3','barrel3','sacks','crate2','bowl3'],grocer:['bowl3','crate2','crate2','sacks','barrel3','cauld','board'],
+  smith:['rackA','rackB','barrel3','crate2','logs'],artisan:['rackB','crate2','logs','sacks','barrel3'],guild:['rackA','rackB','barrel3','crate2'],hq:['rackA','rackB','barrel3'],
+  shop:['crate2','bowl3','barrel3','sacks'],relic:['crate2','barrel3','sacks'],casino:['barrel3','crate2','bowl3'],classhall:['rackA','rackB'],palace:[]};
+function njDecor(m,act,o,tk){const set=NX_SET[act];if(!set||m.cave)return;const W=m.w,H=m.h,cx=W>>1;
+  let sd=(o.dx||1)*73+(o.dy||1)*37+(tk||'x').charCodeAt(1)*11;const R=()=>{sd=(sd*1103515245+12345)&0x7fffffff;return sd/0x7fffffff;};
+  // 이미 그려진 물건이 차지한 칸 (막히지 않는 깔개·창문 포함)
+  const occ=new Uint8Array(W*H);const mark=(x,y,w,h)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(i>=0&&j>=0&&i<W&&j<H)occ[j*W+i]=1;};
+  for(const ob of m.objs){if(ob.x==null)continue;const rw=ob.r?Math.ceil(ob.r[2]/T):2,rh=ob.r?Math.ceil(ob.r[3]/T):2;const by=Math.floor((ob.base||(ob.y+1)*T)/T);mark(ob.x,Math.max(0,by-rh),rw,rh);}
+  for(let y=H-3;y<H;y++)mark(cx-1,y,3,1);if(m.ownerPos)mark(m.ownerPos[0]-1,m.ownerPos[1],3,3);
+  const keys=[];for(const ob of m.objs)if(ob.act&&ob.x!=null)keys.push([ob.x,Math.floor((ob.base||(ob.y+1)*T)/T)]);if(m.ownerPos)keys.push([m.ownerPos[0],m.ownerPos[1]+1]);
+  const reach=()=>{const seen=new Uint8Array(W*H),q=[[m.spawn.x,m.spawn.y]];seen[m.spawn.y*W+m.spawn.x]=1;for(let i=0;i<q.length;i++){const [x,y]=q[i];for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+b;if(nx>=0&&ny>=0&&nx<W&&ny<H&&!seen[ny*W+nx]&&!isBlocked(m,nx,ny)){seen[ny*W+nx]=1;q.push([nx,ny]);}}}return seen;};
+  let anchor=null;let ok0=reach();const nearOK=(seen,x,y)=>[[0,0],[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>seen[(y+b)*W+x+a]);
+  const canPut=(x,y,w,h)=>{if(x<1||y<2||x+w>W-1||y+h>H-1)return false;for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(occ[j*W+i]||isBlocked(m,i,j))return false;return true;};
+  for(const k of set){const [im,r,w,h]=NX[k];const cand=[];const fh=Math.max(1,Math.ceil(r[3]/T)),y0=h?2:3;
+    for(let y=y0;y+Math.max(h,1)<=H-1;y++)for(let x=1;x+Math.max(w,1)<=W-1;x++){const wallTop=y===2,side=x===1||x+Math.max(w,1)===W-1,bot=y+Math.max(h,1)===H-1;if(!(wallTop||side||bot))continue;if(!canPut(x,y-(fh-Math.max(h,1)),Math.max(w,1),fh))continue;cand.push([x,y]);}
+    if(window.NXDBG)console.log('nx',act,k,cand.length);if(!cand.length)continue;const KIT=['board','soup','cauld','bowl3'].includes(k)&&anchor;if(KIT)cand.sort((a,b)=>Math.hypot(a[0]-anchor[0],a[1]-anchor[1])-Math.hypot(b[0]-anchor[0],b[1]-anchor[1]));
+    for(let t=0;t<14&&cand.length;t++){const idx=KIT?0:Math.floor(R()*cand.length);const [x,y]=cand.splice(idx,1)[0];
+      if(w)block(m,x,y,w,h);const seen=reach();let good=true;for(let i=0;i<W*H&&good;i++)if(ok0[i]&&!seen[i]&&!(i%W>=x&&i%W<x+w&&Math.floor(i/W)>=y&&Math.floor(i/W)<y+h))good=false;
+      if(good)for(const [kx,ky] of keys)if(!nearOK(seen,kx,ky)){good=false;break;}
+      if(!good){if(window.NXDBG)console.log('nx reject',k,x,y);if(w)for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)m.blk[j*W+i]=0;continue;}
+      const ob={t:'furn',k:'nx_'+k,x,y,base:(y+Math.max(h,1))*T,im,r};m.objs.push(ob);mark(x,y-(fh-Math.max(h,1)),Math.max(w,1),fh);ok0=reach();if(['oven','stove','kiln'].includes(k))anchor=[x+1,y];break;}}
+  // 벽 깃발 1~2개 (창문·그림과 겹치지 않는 윗벽)
+  let nb=act==='home'?1:2;for(let t=0;t<20&&nb>0;t++){const x=1+Math.floor(R()*(W-2));if(occ[0*W+x]||occ[1*W+x]||m.objs.some(ob=>ob.x!=null&&(ob.y||0)<=1&&Math.abs(ob.x-x)<2))continue;const b=NX_BAN[Math.floor(R()*NX_BAN.length)];
+    m.objs.push({t:'furn',k:'nx_ban',x,y:0,base:2*T-2,im:'nj_house',r:[b[0],b[1],16,32]});occ[x]=occ[W+x]=1;nb--;}}
 function enterInterior(o){const tk=MAP.town;const back=o.t==='mine'?{x:o.x+2,y:o.y+3}:{x:o.dx,y:o.dy+1};MAP=buildInterior(o,tk);MAP.back=back;paintGround(MAP);
   const sp=MAP.spawn;player.x=(sp.x+.5)*T;player.y=(sp.y+.5)*T;player.path=[];player.goal=null;player.exited=true;MAP.npcs=[];
   const act=o.act||'home';const own=OWNER[act];
@@ -930,8 +1014,12 @@ function findPath(m,sx,sy,tx,ty){if(isBlocked(m,tx,ty)){let best=null,bd=1e9;for
 
 /* ----- 걷는 장면: 입장 · 주민 ----- */
 let userZoom=1;
+// 나올 자리가 막혀 있거나 고립된 곳이면, 마을 입구에서 걸어갈 수 있는 가장 가까운 칸으로
+function safeSpawn(m,sp){const W=m.w,H=m.h,seen=new Uint8Array(W*H),q=[[m.spawn.x,m.spawn.y]];seen[m.spawn.y*W+m.spawn.x]=1;
+  for(let i=0;i<q.length;i++){const [x,y]=q[i];for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+a,ny=y+b;if(nx>=0&&ny>=0&&nx<W&&ny<H&&!seen[ny*W+nx]&&!isBlocked(m,nx,ny)){seen[ny*W+nx]=1;q.push([nx,ny]);}}}
+  if(seen[sp.y*W+sp.x])return sp;let best=m.spawn,bd=1e9;for(const [x,y] of q){const d=Math.abs(x-sp.x)+Math.abs(y-sp.y);if(d<bd){bd=d;best={x,y};}}return best;}
 function enterWalk(loc,spawnAt){if(ED&&loc!=='camp'){ED=null;$('edBar').classList.add('hidden');document.body.classList.remove('editing');}const s=S();if(scene==='world'&&!spawnAt)s.night=Math.random()<.3;s.loc=loc;MAP=loc==='camp'?buildCamp():buildTown(loc);paintGround(MAP);
-  const sp=spawnAt||MAP.spawn;player={x:(sp.x+.5)*T,y:(sp.y+.5)*T,path:[],t:0,anim:'idle',face:1,desc:unitDesc(s.leader),name:s.leader.name,kind:'player'};
+  const sp=safeSpawn(MAP,spawnAt||MAP.spawn);player={x:(sp.x+.5)*T,y:(sp.y+.5)*T,path:[],t:0,anim:'idle',face:1,desc:unitDesc(s.leader),name:s.leader.name,kind:'player'};
   MAP.npcs=[];if(loc==='camp')populateCamp();else populateTown(loc);townExtras(loc);
   cam.x=player.x;cam.y=player.y;scene='walk';sceneT=0;showWalkUI();G.save();}
 // 밤 손님 · 동물 · 축제 장식 · 보물 ✕ 표시 · 집결지 유물 전시대
